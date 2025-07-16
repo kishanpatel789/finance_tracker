@@ -1,8 +1,9 @@
 from datetime import datetime
+
 import pytest
 from sqlmodel import Session, create_engine
 
-from models import SQLModel, Transaction, Category
+from models import Category, SQLModel, Transaction
 
 engine = create_engine("sqlite:///:memory:", echo=True)
 
@@ -14,9 +15,9 @@ def set_up_database():
 
 def test_create_category():
     category = Category(
-            name="Utilities",
-            budget=200,
-            )
+        name="Utilities",
+        budget=200,
+    )
 
     with Session(engine) as session:
         session.add(category)
@@ -27,18 +28,19 @@ def test_create_category():
     assert category.name == "Utilities"
     assert category.budget == 200
 
+
 def test_create_transaction():
     category = Category(
-            name="Utilities",
-            budget=200,
-            )
+        name="Utilities",
+        budget=200,
+    )
     transaction = Transaction(
-            trans_date = datetime(2025, 6, 1, 15, 30, 0),
-            amount = 50,
-            vendor = "Amazon",
-            note = "Handsoap",
-            category=category,
-            )
+        trans_date=datetime(2025, 6, 1, 15, 30, 0),
+        amount=50,
+        vendor="Amazon",
+        note="Handsoap",
+        category=category,
+    )
     with Session(engine) as session:
         session.add(category)
         session.add(transaction)
@@ -54,7 +56,3 @@ def test_create_transaction():
     assert transaction.created_at is not None
     assert transaction.category_id is not None
     assert transaction.category.name == "Utilities"
-
-
-
-

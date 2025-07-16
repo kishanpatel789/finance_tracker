@@ -1,13 +1,13 @@
 from datetime import datetime, timezone
-from sqlmodel import SQLModel, Field, Relationship
 
-
+from sqlmodel import Field, Relationship, SQLModel
 
 
 class Category(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     name: str
     budget: float
+
 
 class Transaction(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
@@ -25,4 +25,4 @@ class Transaction(SQLModel, table=True):
         sa_relationship_kwargs={
             "lazy": "selectin",
         },
-)
+    )

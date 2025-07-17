@@ -8,6 +8,8 @@ class Category(SQLModel, table=True):
     name: str
     budget: float
 
+    transactions: list["Transaction"] = Relationship(back_populates="category")
+
 
 class Transaction(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
@@ -22,6 +24,7 @@ class Transaction(SQLModel, table=True):
         default=None, foreign_key="category.id", ondelete="SET NULL"
     )
     category: Category | None = Relationship(
+        back_populates="transactions",
         sa_relationship_kwargs={
             "lazy": "selectin",
         },

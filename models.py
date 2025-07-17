@@ -18,7 +18,7 @@ class Transaction(SQLModel, table=True):
     amount: Decimal = Field(sa_column=Column(Numeric(10, 2)))
     vendor: str
     note: str | None = None
-    created_at: datetime = datetime.now(timezone.utc)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime | None = None
 
     category_id: int | None = Field(

@@ -5,31 +5,39 @@ from sqlmodel import Session, create_engine
 
 from models import Category, SQLModel, Transaction
 
-engine = create_engine("sqlite:///:memory:", echo=True)
 
-
-@pytest.fixture(scope="function", autouse=True)
-def set_up_database():
+@pytest.fixture(scope="function")
+def db_engine():
+    engine = create_engine("sqlite:///:memory:", echo=True)
     SQLModel.metadata.create_all(engine)
 
+    yield engine
 
-def test_create_category():
+    engine.dispose()
+
+
+@pytest.fixture(scope="function")
+def session(db_engine):
+    with Session(db_engine) as session:
+        yield session
+
+
+def test_create_category(session):
     category = Category(
         name="Utilities",
         budget=200,
     )
 
-    with Session(engine) as session:
-        session.add(category)
-        session.commit()
-        session.refresh(category)
+    session.add(category)
+    session.commit()
+    session.refresh(category)
 
-    assert category.id is not None
+    assert category.id == 1
     assert category.name == "Utilities"
     assert category.budget == 200
 
 
-def test_create_transaction():
+def test_create_transaction(session):
     category = Category(
         name="Utilities",
         budget=200,
@@ -41,14 +49,13 @@ def test_create_transaction():
         note="Handsoap",
         category=category,
     )
-    with Session(engine) as session:
-        session.add(category)
-        session.add(transaction)
-        session.commit()
-        session.refresh(category)
-        session.refresh(transaction)
+    session.add(category)
+    session.add(transaction)
+    session.commit()
+    session.refresh(category)
+    session.refresh(transaction)
 
-    assert transaction.id is not None
+    assert transaction.id == 1
     assert transaction.trans_date == datetime(2025, 6, 1, 15, 30, 0)
     assert transaction.amount == 50
     assert transaction.vendor == "Amazon"

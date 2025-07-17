@@ -3,5 +3,24 @@ name = "finance-tracker"
 version = "0.1.0"
 description = "An app to track your monthly transactions against a budget."
 readme = "README.md"
+authors = [
+    { name = "Kishan Patel", email = "kishanpatel789@gmail.com" }
+]
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "sqlmodel>=0.0.24",
+]
+
+[dependency-groups]
+dev = [
+    "poethepoet>=0.36.0",
+    "pytest>=8.4.1",
+    "pytest-cov>=6.2.1",
+]
+
+[tool.poe.tasks]
+test = "pytest"
+cov = "pytest --cov=. --cov-report=term-missing"
+lint = "uv tool run ruff check ."
+format = "uv tool run ruff format ."
+tc = "ty check ."

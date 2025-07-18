@@ -1,8 +1,8 @@
 import pytest
 from fastapi.testclient import TestClient
-from sqlmodel import Session
 
-from src.api import app, create_engine, get_session
+from src.dependencies import Session, create_engine, get_session
+from src.main import app
 from src.models import SQLModel
 
 

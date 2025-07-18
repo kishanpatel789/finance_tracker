@@ -3,7 +3,7 @@ from datetime import datetime
 import pytest
 from sqlmodel import Session, create_engine
 
-from models import Category, SQLModel, Transaction
+from src.models import Category, SQLModel, Transaction
 
 
 @pytest.fixture(scope="function")

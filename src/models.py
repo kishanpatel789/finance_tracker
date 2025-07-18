@@ -19,6 +19,11 @@ class CategoryCreate(CategoryBase):
     pass
 
 
+class CategoryUpdate(SQLModel):
+    name: str | None = None
+    budget: Decimal | None = None
+
+
 class CategoryRead(CategoryBase):
     id: int
 

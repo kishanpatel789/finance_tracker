@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 from decimal import Decimal
 
+from pydantic import BaseModel
 from sqlmodel import Column, Field, Numeric, Relationship, SQLModel
 
 
@@ -60,3 +61,7 @@ class TransactionRead(TransactionBase):
     created_at: datetime
     updated_at: datetime | None = None
     category: CategoryBase
+
+
+class DeleteResponse(BaseModel):
+    detail: str

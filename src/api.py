@@ -4,7 +4,13 @@ from decouple import config
 from fastapi import Depends, FastAPI, HTTPException
 from sqlmodel import Session, create_engine, select
 
-from .models import Category, CategoryCreate, CategoryRead, CategoryUpdate
+from .models import (
+    Category,
+    CategoryCreate,
+    CategoryRead,
+    CategoryUpdate,
+    DeleteResponse,
+)
 
 DATABASE_URL = config("DATABASE_URL")
 connect_args = {"check_same_thread": False}
@@ -56,7 +62,8 @@ def update_category(category_id: int, category: CategoryUpdate, session: Session
         raise HTTPException(status_code=404, detail="Category not found")
 
     category_data = category.model_dump(exclude_unset=True)
-    db_category.sqlmodel_update(category_data)
+    for key, value in category_data.items():
+        setattr(db_category, key, value)
 
     session.add(db_category)
     session.commit()
@@ -65,14 +72,14 @@ def update_category(category_id: int, category: CategoryUpdate, session: Session
 
 
 @app.delete("/categories/{category_id}")
-def delete_category(category_id: int, session: SessionDep):
+def delete_category(category_id: int, session: SessionDep) -> DeleteResponse:
     db_category = session.get(Category, category_id)
     if db_category is None:
         raise HTTPException(status_code=404, detail="Category not found")
 
     session.delete(db_category)
     session.commit()
-    return {"ok": True}
+    return {"detail": f"Category with ID {category_id} deleted successfully"}
 
 
 # TODO: CRUD operations for Transactions

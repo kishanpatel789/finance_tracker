@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from decimal import Decimal
 
 from pydantic import BaseModel
@@ -29,8 +29,13 @@ class CategoryRead(CategoryBase):
     id: int
 
 
+class CategoryReadNested(SQLModel):
+    id: int
+    name: str
+
+
 class TransactionBase(SQLModel):
-    trans_date: datetime
+    trans_date: date
     amount: Decimal = Field(sa_column=Column(Numeric(10, 2)))
     vendor: str
     note: str | None = None
@@ -53,14 +58,22 @@ class Transaction(TransactionBase, table=True):
 
 
 class TransactionCreate(TransactionBase):
-    pass
+    category_id: int | None = None
+
+
+class TransactionUpdate(SQLModel):
+    trans_date: datetime | None = None
+    amount: Decimal | None = None
+    vendor: str | None = None
+    note: str | None = None
+    category_id: int | None = None
 
 
 class TransactionRead(TransactionBase):
     id: int
     created_at: datetime
     updated_at: datetime | None = None
-    category: CategoryBase
+    category: CategoryReadNested | None = None
 
 
 class DeleteResponse(BaseModel):

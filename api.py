@@ -46,7 +46,7 @@ def read_categories(
 @app.get("/categories/{category_id}", response_model=CategoryRead)
 def read_category(category_id: int, session: SessionDep):
     category = session.get(Category, category_id)
-    if not category:
+    if category is not None:
         raise HTTPException(status_code=404, detail="Category not found")
     return category
 

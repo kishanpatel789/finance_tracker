@@ -4,20 +4,34 @@ from decimal import Decimal
 from sqlmodel import Column, Field, Numeric, Relationship, SQLModel
 
 
-class Category(SQLModel, table=True):
-    id: int | None = Field(default=None, primary_key=True)
+class CategoryBase(SQLModel):
     name: str
     budget: Decimal | None = Field(sa_column=Column(Numeric(10, 2)))
+
+
+class Category(CategoryBase, table=True):
+    id: int | None = Field(default=None, primary_key=True)
 
     transactions: list["Transaction"] = Relationship(back_populates="category")
 
 
-class Transaction(SQLModel, table=True):
-    id: int | None = Field(default=None, primary_key=True)
+class CategoryCreate(CategoryBase):
+    pass
+
+
+class CategoryRead(CategoryBase):
+    id: int
+
+
+class TransactionBase(SQLModel):
     trans_date: datetime
     amount: Decimal = Field(sa_column=Column(Numeric(10, 2)))
     vendor: str
     note: str | None = None
+
+
+class Transaction(TransactionBase, table=True):
+    id: int | None = Field(default=None, primary_key=True)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime | None = None
 
@@ -30,3 +44,14 @@ class Transaction(SQLModel, table=True):
             "lazy": "selectin",
         },
     )
+
+
+class TransactionCreate(TransactionBase):
+    pass
+
+
+class TransactionRead(TransactionBase):
+    id: int
+    created_at: datetime
+    updated_at: datetime | None = None
+    category: CategoryBase

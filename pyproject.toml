@@ -8,6 +8,9 @@ authors = [
 ]
 requires-python = ">=3.13"
 dependencies = [
+    "alembic>=1.16.4",
+    "fastapi[standard]>=0.116.1",
+    "python-decouple>=3.8",
     "sqlmodel>=0.0.24",
 ]
 
@@ -23,4 +26,4 @@ test = "pytest"
 cov = "pytest --cov=. --cov-report=term-missing"
 lint = "uv tool run ruff check ."
 format = "uv tool run ruff format ."
-tc = "ty check ."
+tc = "uv tool run ty check ."

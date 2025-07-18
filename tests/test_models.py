@@ -1,9 +1,9 @@
-from datetime import datetime
+from datetime import date
 
 import pytest
 from sqlmodel import Session, create_engine
 
-from models import Category, SQLModel, Transaction
+from src.models import Category, SQLModel, Transaction
 
 
 @pytest.fixture(scope="function")
@@ -39,11 +39,11 @@ def test_create_category(session):
 
 def test_create_transaction(session):
     category = Category(
-        name="Utilities",
+        name="General",
         budget=200,
     )
     transaction = Transaction(
-        trans_date=datetime(2025, 6, 1, 15, 30, 0),
+        trans_date=date(2025, 6, 1),
         amount=50,
         vendor="Amazon",
         note="Handsoap",
@@ -56,10 +56,10 @@ def test_create_transaction(session):
     session.refresh(transaction)
 
     assert transaction.id == 1
-    assert transaction.trans_date == datetime(2025, 6, 1, 15, 30, 0)
+    assert transaction.trans_date == date(2025, 6, 1)
     assert transaction.amount == 50
     assert transaction.vendor == "Amazon"
     assert transaction.note == "Handsoap"
     assert transaction.created_at is not None
     assert transaction.category_id is not None
-    assert transaction.category.name == "Utilities"
+    assert transaction.category.name == "General"

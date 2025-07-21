@@ -13,7 +13,7 @@ def add_category(client: TestClient):
 
 
 @pytest.fixture()
-def add_transaction(client: TestClient):
+def add_transaction(client: TestClient, add_category):
     payload = {
         "trans_date": "2024-07-14",
         "amount": 54.99,
@@ -36,7 +36,7 @@ def add_another_transaction(client: TestClient):
     return response
 
 
-def test_add_transaction(client: TestClient, add_category, add_transaction):
+def test_add_transaction(client: TestClient, add_transaction):
     response = add_transaction
     data = response.json()
 
@@ -51,7 +51,7 @@ def test_add_transaction(client: TestClient, add_category, add_transaction):
 
 
 def test_add_another_transaction(
-    client: TestClient, add_category, add_transaction, add_another_transaction
+    client: TestClient, add_transaction, add_another_transaction
 ):
     response = add_another_transaction
     data = response.json()
@@ -84,3 +84,32 @@ def test_add_transaction_422(client: TestClient):
     response = client.post("/transactions", json=payload)
 
     assert response.status_code == 422
+
+
+def test_get_transactions(client: TestClient, add_transaction, add_another_transaction):
+    response = client.get("/transactions")
+    data = response.json()
+
+    assert response.status_code == 200
+    assert len(data) == 2
+
+
+def test_get_transaction(client: TestClient, add_transaction):
+    response = client.get("/transactions/1")
+    data = response.json()
+
+    assert data["id"] == 1
+    assert data["trans_date"] == "2024-07-14"
+    assert data["amount"] == "54.99"
+    assert data["vendor"] == "AT&T"
+    assert data["note"] == "Fiber Internet"
+    assert data["category"]["id"] == 1
+    assert data["category"]["name"] == "Utilities"
+
+
+def test_get_transaction_not_found(client: TestClient):
+    response = client.get("/transactions/99")
+    data = response.json()
+
+    assert response.status_code == 404
+    assert data["detail"] == "Transaction not found"

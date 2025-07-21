@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException
+from sqlmodel import select
 
 from ..dependencies import SessionDep
 from ..models import (
@@ -29,3 +30,17 @@ def create_transaction(transaction: TransactionCreate, session: SessionDep):
     session.commit()
     session.refresh(db_transaction)
     return db_transaction
+
+
+@router.get("/", response_model=list[TransactionRead])
+def read_transactions(session: SessionDep):
+    transactions = session.exec(select(Transaction)).all()
+    return transactions
+
+
+@router.get("/{transaction_id}", response_model=TransactionRead)
+def read_transaction(transaction_id: int, session: SessionDep):
+    transaction = session.get(Transaction, transaction_id)
+    if transaction is None:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+    return transaction

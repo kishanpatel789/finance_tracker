@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, status
 from sqlmodel import select
 
 from ..dependencies import SessionDep
@@ -29,7 +29,7 @@ def check_for_existing_category(session: SessionDep, category_name: str) -> None
         )
 
 
-@router.post("/", response_model=CategoryRead)
+@router.post("/", response_model=CategoryRead, status_code=status.HTTP_201_CREATED)
 def create_category(category: CategoryCreate, session: SessionDep):
     db_category = Category.model_validate(category)
 

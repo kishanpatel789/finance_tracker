@@ -26,7 +26,7 @@ def test_create_category(client: TestClient, add_category):
     response = add_category
     data = response.json()
 
-    assert response.status_code == 200
+    assert response.status_code == 201
     assert data["id"] == 1
     assert data["name"] == "Utilities"
     assert data["budget"] == "200.00"

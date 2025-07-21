@@ -40,7 +40,7 @@ def test_create_transaction(client: TestClient, add_transaction):
     response = add_transaction
     data = response.json()
 
-    assert response.status_code == 200
+    assert response.status_code == 201
     assert data["id"] == 1
     assert data["trans_date"] == "2024-07-14"
     assert data["amount"] == "54.99"
@@ -57,7 +57,7 @@ def test_create_another_transaction(
     response = add_another_transaction
     data = response.json()
 
-    assert response.status_code == 200
+    assert response.status_code == 201
     assert data["id"] == 2
     assert data["trans_date"] == "2025-11-02"
     assert data["amount"] == "84.99"

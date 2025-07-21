@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, status
 from sqlmodel import select
 
 from ..dependencies import SessionDep
@@ -19,7 +19,7 @@ router = APIRouter(
 )
 
 
-@router.post("/", response_model=TransactionRead)
+@router.post("/", response_model=TransactionRead, status_code=status.HTTP_201_CREATED)
 def create_transaction(transaction: TransactionCreate, session: SessionDep):
     db_transaction = Transaction.model_validate(
         transaction.model_dump(exclude={"category_id"})

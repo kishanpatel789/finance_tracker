@@ -158,3 +158,23 @@ def test_update_transaction_not_found(client: TestClient):
 
     assert response.status_code == 404
     assert data["detail"] == "Transaction not found"
+
+
+def test_delete_transaction(client: TestClient, add_transaction):
+    response = client.delete("/transactions/1")
+    data = response.json()
+
+    assert response.status_code == 200
+    assert data["detail"] == "Transaction with ID 1 deleted successfully"
+
+    response = client.get("/transactions/1")
+
+    assert response.status_code == 404
+
+
+def test_delete_transaction_not_found(client: TestClient):
+    response = client.delete("/transactions/99")
+    data = response.json()
+
+    assert response.status_code == 404
+    assert data["detail"] == "Transaction not found"

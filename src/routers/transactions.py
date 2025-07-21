@@ -6,6 +6,7 @@ from sqlmodel import select
 from ..dependencies import SessionDep
 from ..models import (
     Category,
+    DeleteResponse,
     Transaction,
     TransactionCreate,
     TransactionRead,
@@ -76,3 +77,16 @@ def update_transaction(
     session.commit()
     session.refresh(db_transaction)
     return db_transaction
+
+
+@router.delete("/{transaction_id}")
+def delete_transaction(transaction_id: int, session: SessionDep) -> DeleteResponse:
+    db_transaction = session.get(Transaction, transaction_id)
+    if db_transaction is None:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+
+    session.delete(db_transaction)
+    session.commit()
+    return DeleteResponse(
+        detail=f"Transaction with ID {transaction_id} deleted successfully"
+    )

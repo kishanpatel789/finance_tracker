@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from fastapi import APIRouter, HTTPException
 from sqlmodel import select
 
@@ -7,6 +9,7 @@ from ..models import (
     Transaction,
     TransactionCreate,
     TransactionRead,
+    TransactionUpdate,
 )
 
 router = APIRouter(
@@ -44,3 +47,32 @@ def read_transaction(transaction_id: int, session: SessionDep):
     if transaction is None:
         raise HTTPException(status_code=404, detail="Transaction not found")
     return transaction
+
+
+@router.patch("/{transaction_id}", response_model=TransactionRead)
+def update_transaction(
+    transaction_id: int, transaction: TransactionUpdate, session: SessionDep
+):
+    db_transaction = session.get(Transaction, transaction_id)
+    if db_transaction is None:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+
+    transaction_data = transaction.model_dump(exclude_unset=True)
+    for key, value in transaction_data.items():
+        setattr(db_transaction, key, value)
+
+    if (
+        "category_id" in transaction_data
+        and transaction_data["category_id"] is not None
+    ):
+        category = session.get(Category, transaction_data["category_id"])
+        if category is None:
+            raise HTTPException(status_code=404, detail="Category not found")
+        db_transaction.category = category
+
+    db_transaction.updated_at = datetime.now(timezone.utc)
+
+    session.add(db_transaction)
+    session.commit()
+    session.refresh(db_transaction)
+    return db_transaction

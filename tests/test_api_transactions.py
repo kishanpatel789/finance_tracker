@@ -48,6 +48,7 @@ def test_add_transaction(client: TestClient, add_transaction):
     assert data["note"] == "Fiber Internet"
     assert data["category"]["id"] == 1
     assert data["category"]["name"] == "Utilities"
+    assert data["created_at"] is not None
 
 
 def test_add_another_transaction(
@@ -63,6 +64,7 @@ def test_add_another_transaction(
     assert data["vendor"] == "Kroger"
     assert data["note"] is None
     assert data["category"] is None
+    assert data["created_at"] is not None
 
 
 def test_add_transaction_invalid_category(client: TestClient):
@@ -109,6 +111,49 @@ def test_get_transaction(client: TestClient, add_transaction):
 
 def test_get_transaction_not_found(client: TestClient):
     response = client.get("/transactions/99")
+    data = response.json()
+
+    assert response.status_code == 404
+    assert data["detail"] == "Transaction not found"
+
+
+def test_update_transaction(client: TestClient, add_category, add_another_transaction):
+    payload = {
+        "amount": "100.00",
+        "note": "i needed it",
+        "vendor": "Amazon",
+        "category_id": 1,
+    }
+    response = client.patch("/transactions/1", json=payload)
+    data = response.json()
+
+    assert response.status_code == 200
+    assert data["id"] == 1
+    assert data["trans_date"] == "2025-11-02"
+    assert data["amount"] == "100.00"
+    assert data["vendor"] == "Amazon"
+    assert data["note"] == "i needed it"
+    assert data["category"]["id"] == 1
+    assert data["category"]["name"] == "Utilities"
+    assert data["created_at"] is not None
+    assert data["updated_at"] is not None
+
+
+def test_update_transaction_invalid_category(
+    client: TestClient, add_another_transaction
+):
+    payload = {
+        "category_id": 99,
+    }
+    response = client.patch("/transactions/1", json=payload)
+    data = response.json()
+
+    assert response.status_code == 404
+    assert data["detail"] == "Category not found"
+
+
+def test_update_transaction_not_found(client: TestClient):
+    response = client.patch("/transactions/99", json={})
     data = response.json()
 
     assert response.status_code == 404

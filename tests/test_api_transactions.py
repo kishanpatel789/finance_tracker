@@ -36,7 +36,7 @@ def add_another_transaction(client: TestClient):
     return response
 
 
-def test_add_transaction(client: TestClient, add_transaction):
+def test_create_transaction(client: TestClient, add_transaction):
     response = add_transaction
     data = response.json()
 
@@ -51,7 +51,7 @@ def test_add_transaction(client: TestClient, add_transaction):
     assert data["created_at"] is not None
 
 
-def test_add_another_transaction(
+def test_create_another_transaction(
     client: TestClient, add_transaction, add_another_transaction
 ):
     response = add_another_transaction
@@ -67,7 +67,7 @@ def test_add_another_transaction(
     assert data["created_at"] is not None
 
 
-def test_add_transaction_invalid_category(client: TestClient):
+def test_create_transaction_invalid_category(client: TestClient):
     payload = {
         "trans_date": "2025-11-02",
         "amount": 84.99,
@@ -81,7 +81,7 @@ def test_add_transaction_invalid_category(client: TestClient):
     assert data["detail"] == "Category not found"
 
 
-def test_add_transaction_422(client: TestClient):
+def test_create_transaction_422(client: TestClient):
     payload = {}
     response = client.post("/transactions", json=payload)
 

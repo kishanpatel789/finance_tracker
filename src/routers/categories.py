@@ -16,9 +16,25 @@ router = APIRouter(
 )
 
 
+def check_for_existing_category(session: SessionDep, category_name: str) -> None:
+    """Check if a category with the given name already exists."""
+
+    db_category_existing = session.exec(
+        select(Category).where(Category.name == category_name)
+    ).first()
+    if db_category_existing is not None:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Category with name '{category_name}' already exists (ID {db_category_existing.id})",
+        )
+
+
 @router.post("/", response_model=CategoryRead)
 def create_category(category: CategoryCreate, session: SessionDep):
     db_category = Category.model_validate(category)
+
+    check_for_existing_category(session, category.name)
+
     session.add(db_category)
     session.commit()
     session.refresh(db_category)
@@ -46,6 +62,8 @@ def update_category(category_id: int, category: CategoryUpdate, session: Session
         raise HTTPException(status_code=404, detail="Category not found")
 
     category_data = category.model_dump(exclude_unset=True)
+    if "name" in category_data and category_data["name"] != db_category.name:
+        check_for_existing_category(session, category.name)
     for key, value in category_data.items():
         setattr(db_category, key, value)
 

@@ -63,4 +63,4 @@ def delete_category(category_id: int, session: SessionDep) -> DeleteResponse:
 
     session.delete(db_category)
     session.commit()
-    return {"detail": f"Category with ID {category_id} deleted successfully"}
+    return DeleteResponse(detail=f"Category with ID {category_id} deleted successfully")

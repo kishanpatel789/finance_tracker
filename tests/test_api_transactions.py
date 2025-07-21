@@ -1,0 +1,86 @@
+import pytest
+from fastapi.testclient import TestClient
+
+
+@pytest.fixture()
+def add_category(client: TestClient):
+    payload = {
+        "name": "Utilities",
+        "budget": 200.00,
+    }
+    response = client.post("/categories", json=payload)
+    return response
+
+
+@pytest.fixture()
+def add_transaction(client: TestClient):
+    payload = {
+        "trans_date": "2024-07-14",
+        "amount": 54.99,
+        "vendor": "AT&T",
+        "note": "Fiber Internet",
+        "category_id": 1,
+    }
+    response = client.post("/transactions", json=payload)
+    return response
+
+
+@pytest.fixture()
+def add_another_transaction(client: TestClient):
+    payload = {
+        "trans_date": "2025-11-02",
+        "amount": 84.99,
+        "vendor": "Kroger",
+    }
+    response = client.post("/transactions", json=payload)
+    return response
+
+
+def test_add_transaction(client: TestClient, add_category, add_transaction):
+    response = add_transaction
+    data = response.json()
+
+    assert response.status_code == 200
+    assert data["id"] == 1
+    assert data["trans_date"] == "2024-07-14"
+    assert data["amount"] == "54.99"
+    assert data["vendor"] == "AT&T"
+    assert data["note"] == "Fiber Internet"
+    assert data["category"]["id"] == 1
+    assert data["category"]["name"] == "Utilities"
+
+
+def test_add_another_transaction(
+    client: TestClient, add_category, add_transaction, add_another_transaction
+):
+    response = add_another_transaction
+    data = response.json()
+
+    assert response.status_code == 200
+    assert data["id"] == 2
+    assert data["trans_date"] == "2025-11-02"
+    assert data["amount"] == "84.99"
+    assert data["vendor"] == "Kroger"
+    assert data["note"] is None
+    assert data["category"] is None
+
+
+def test_add_transaction_invalid_category(client: TestClient):
+    payload = {
+        "trans_date": "2025-11-02",
+        "amount": 84.99,
+        "vendor": "Kroger",
+        "category_id": 99,
+    }
+    response = client.post("/transactions", json=payload)
+    data = response.json()
+
+    assert response.status_code == 404
+    assert data["detail"] == "Category not found"
+
+
+def test_add_transaction_422(client: TestClient):
+    payload = {}
+    response = client.post("/transactions", json=payload)
+
+    assert response.status_code == 422

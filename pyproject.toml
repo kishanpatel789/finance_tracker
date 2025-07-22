@@ -23,7 +23,8 @@ dev = [
 
 [tool.poe.tasks]
 test = "pytest"
-cov = "pytest --cov=. --cov-report=term-missing"
+cov = "pytest --cov=src --cov-report=term-missing"
 lint = "uv tool run ruff check ."
 format = "uv tool run ruff format ."
 tc = "uv tool run ty check ."
+apirun = "uv run fastapi dev src/main.py"

@@ -22,21 +22,28 @@ def add_another_category(client: TestClient):
     return response
 
 
-def test_add_category(client: TestClient, add_category):
+def test_create_category(client: TestClient, add_category):
     response = add_category
     data = response.json()
 
-    assert response.status_code == 200
+    assert response.status_code == 201
     assert data["id"] == 1
     assert data["name"] == "Utilities"
     assert data["budget"] == "200.00"
 
 
-def test_add_category_422(client: TestClient):
+def test_create_category_422(client: TestClient):
     payload = {}
     response = client.post("/categories", json=payload)
 
     assert response.status_code == 422
+
+
+def test_create_duplicate_category(client: TestClient, add_category):
+    payload = {"name": "Utilities", "budget": None}
+    response = client.post("/categories", json=payload)
+    assert response.status_code == 409
+    assert "already exists" in response.json()["detail"]
 
 
 def test_get_categories(client: TestClient, add_category, add_another_category):
@@ -75,6 +82,15 @@ def test_update_category(client: TestClient, add_category):
     assert data["id"] == 1
     assert data["name"] == "Updated Utilities"
     assert data["budget"] == "200.00"
+
+
+def test_update_category_conflicting_name(
+    client: TestClient, add_category, add_another_category
+):
+    payload = {"name": "Utilities", "budget": None}
+    response = client.patch("/categories/2", json=payload)
+    assert response.status_code == 409
+    assert "already exists" in response.json()["detail"]
 
 
 def test_update_category_not_found(client: TestClient):

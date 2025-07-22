@@ -1,7 +1,6 @@
 import random
 from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal
-from pathlib import Path
 
 from faker import Faker
 from sqlmodel import Session, create_engine
@@ -11,9 +10,6 @@ from src.models import Category, SQLModel, Transaction
 fake = Faker()
 random.seed(42)
 Faker.seed(42)
-
-CSV_DIR = Path("scripts/generated_data")
-CSV_DIR.mkdir(parents=True, exist_ok=True)
 
 
 def random_date_within_last_year() -> date:

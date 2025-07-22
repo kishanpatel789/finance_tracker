@@ -65,7 +65,7 @@ def test_create_or_update_category_422_bad_strings(
     assert response.status_code == 422
     assert data["detail"][0]["type"] == "string_too_short"
 
-    payload = {"name": "  t    "}
+    payload = {"name": " " * 5}
     response = client.request(method, url, json=payload)
     data = response.json()
     assert response.status_code == 422

@@ -12,9 +12,15 @@ class MySQLModel(SQLModel):
     )
 
 
+field_money_dec_or_none = Field(max_digits=10, decimal_places=2, default=None)
+field_money_dec = Field(max_digits=10, decimal_places=2)
+field_str_1_25_or_none = Field(min_length=1, max_length=25, default=None)
+field_str_1_25 = Field(min_length=1, max_length=25)
+
+
 class CategoryBase(MySQLModel):
-    name: str = Field(min_length=3, max_length=25)
-    budget: Decimal | None = Field(max_digits=10, decimal_places=2, default=None)
+    name: str = field_str_1_25
+    budget: Decimal | None = field_money_dec_or_none
 
     @field_validator("name", mode="before")
     @classmethod
@@ -34,21 +40,12 @@ class CategoryCreate(CategoryBase):
     pass
 
 
-class CategoryUpdate(MySQLModel):
-    name: str | None = Field(min_length=3, max_length=25, default=None)
-    budget: Decimal | None = Field(max_digits=10, decimal_places=2, default=None)
-
-    @field_validator("name", mode="before")
-    @classmethod
-    def standardize_name(cls, value: str) -> str:
-        value = re.sub(r"\s+", " ", value)
-        value = value.title()
-        return value
+class CategoryUpdate(CategoryBase):
+    name: str | None = field_str_1_25_or_none
 
 
 class CategoryRead(CategoryBase):
     id: int
-    budget: Decimal | None = Field(max_digits=10, decimal_places=2)
 
 
 class CategoryReadNested(MySQLModel):
@@ -58,8 +55,8 @@ class CategoryReadNested(MySQLModel):
 
 class TransactionBase(MySQLModel):
     trans_date: date
-    amount: Decimal = Field(max_digits=10, decimal_places=2)
-    vendor: str = Field(min_length=3, max_length=25)
+    amount: Decimal = field_money_dec
+    vendor: str = field_str_1_25
     note: str | None = Field(min_length=1, max_length=50, default=None)
 
 
@@ -83,11 +80,11 @@ class TransactionCreate(TransactionBase):
     category_id: int | None = None
 
 
-class TransactionUpdate(MySQLModel):
+class TransactionUpdate(TransactionBase):
     trans_date: datetime | None = None
-    amount: Decimal | None = Field(max_digits=10, decimal_places=2, default=None)
-    vendor: str | None = Field(min_length=3, max_length=25, default=None)
-    note: str | None = Field(min_length=1, max_length=25, default=None)
+    amount: Decimal | None = field_money_dec_or_none
+    vendor: str | None = field_str_1_25_or_none
+
     category_id: int | None = None
 
 

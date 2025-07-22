@@ -109,8 +109,8 @@ def test_create_or_update_transaction_422_bad_strings(
     payload = {
         "trans_date": "2024-07-14",
         "amount": 54.99,
-        "vendor": "  t    ",
-        "note": "       ",
+        "vendor": " " * 5,
+        "note": " " * 5,
     }
     response = client.request(method, url, json=payload)
     data = response.json()

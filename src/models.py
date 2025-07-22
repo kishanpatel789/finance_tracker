@@ -1,7 +1,8 @@
+import re
 from datetime import date, datetime, timezone
 from decimal import Decimal
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, field_validator
 from sqlmodel import Field, Relationship, SQLModel
 
 
@@ -14,6 +15,13 @@ class MySQLModel(SQLModel):
 class CategoryBase(MySQLModel):
     name: str = Field(min_length=3, max_length=25)
     budget: Decimal | None = Field(max_digits=10, decimal_places=2, default=None)
+
+    @field_validator("name", mode="before")
+    @classmethod
+    def standardize_name(cls, value: str) -> str:
+        value = re.sub(r"\s+", " ", value)
+        value = value.title()
+        return value
 
 
 class Category(CategoryBase, table=True):
@@ -30,10 +38,17 @@ class CategoryUpdate(MySQLModel):
     name: str | None = Field(min_length=3, max_length=25, default=None)
     budget: Decimal | None = Field(max_digits=10, decimal_places=2, default=None)
 
+    @field_validator("name", mode="before")
+    @classmethod
+    def standardize_name(cls, value: str) -> str:
+        value = re.sub(r"\s+", " ", value)
+        value = value.title()
+        return value
+
 
 class CategoryRead(CategoryBase):
     id: int
-    budget: Decimal = Field(max_digits=10, decimal_places=2)
+    budget: Decimal | None = Field(max_digits=10, decimal_places=2)
 
 
 class CategoryReadNested(MySQLModel):

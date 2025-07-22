@@ -32,6 +32,20 @@ def test_create_category(client: TestClient, add_category):
     assert data["budget"] == "200.00"
 
 
+def test_create_category_standardize_name(client: TestClient):
+    payload = {
+        "name": "   food  and drINK  ",
+        "budget": None,
+    }
+    response = client.post("/categories", json=payload)
+    data = response.json()
+
+    assert response.status_code == 201
+    assert data["id"] == 1
+    assert data["name"] == "Food And Drink"
+    assert data["budget"] is None
+
+
 def test_create_category_422_empty_payload(client: TestClient):
     payload = {}
     response = client.post("/categories", json=payload)
@@ -141,6 +155,20 @@ def test_update_category_conflicting_name(
     response = client.patch("/categories/2", json=payload)
     assert response.status_code == 409
     assert "already exists" in response.json()["detail"]
+
+
+def test_update_category_standardize_name(client: TestClient, add_category):
+    payload = {
+        "name": "   food  and drINK  ",
+        "budget": None,
+    }
+    response = client.patch("/categories/1", json=payload)
+    data = response.json()
+
+    assert response.status_code == 200
+    assert data["id"] == 1
+    assert data["name"] == "Food And Drink"
+    assert data["budget"] is None
 
 
 def test_update_category_not_found(client: TestClient):

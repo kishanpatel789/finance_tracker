@@ -1,13 +1,19 @@
 from datetime import date, datetime, timezone
 from decimal import Decimal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from sqlmodel import Column, Field, Numeric, Relationship, SQLModel
 
 
-class CategoryBase(SQLModel):
-    name: str
-    budget: Decimal | None = Field(sa_column=Column(Numeric(10, 2)))
+class MySQLModel(SQLModel):
+    model_config = ConfigDict(
+        str_strip_whitespace=True,
+    )
+
+
+class CategoryBase(MySQLModel):
+    name: str = Field(min_length=3, max_length=25)
+    budget: Decimal | None = Field(sa_column=Column(Numeric(10, 2)), default=None)
 
 
 class Category(CategoryBase, table=True):
@@ -20,8 +26,8 @@ class CategoryCreate(CategoryBase):
     pass
 
 
-class CategoryUpdate(SQLModel):
-    name: str | None = None
+class CategoryUpdate(MySQLModel):
+    name: str | None = Field(min_length=3, max_length=25, default=None)
     budget: Decimal | None = None
 
 
@@ -29,16 +35,16 @@ class CategoryRead(CategoryBase):
     id: int
 
 
-class CategoryReadNested(SQLModel):
+class CategoryReadNested(MySQLModel):
     id: int
     name: str
 
 
-class TransactionBase(SQLModel):
+class TransactionBase(MySQLModel):
     trans_date: date
     amount: Decimal = Field(sa_column=Column(Numeric(10, 2)))
-    vendor: str
-    note: str | None = None
+    vendor: str = Field(min_length=3, max_length=25)
+    note: str | None = Field(min_length=1, max_length=50, default=None)
 
 
 class Transaction(TransactionBase, table=True):
@@ -61,11 +67,11 @@ class TransactionCreate(TransactionBase):
     category_id: int | None = None
 
 
-class TransactionUpdate(SQLModel):
+class TransactionUpdate(MySQLModel):
     trans_date: datetime | None = None
     amount: Decimal | None = None
-    vendor: str | None = None
-    note: str | None = None
+    vendor: str | None = Field(min_length=3, max_length=25, default=None)
+    note: str | None = Field(min_length=1, max_length=25, default=None)
     category_id: int | None = None
 
 

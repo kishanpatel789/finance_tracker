@@ -88,6 +88,49 @@ def test_create_transaction_422(client: TestClient):
     assert response.status_code == 422
 
 
+@pytest.mark.parametrize(
+    "method,url", [("POST", "/transactions"), ("PATCH", "/transactions/1")]
+)
+def test_create_or_update_transaction_422_bad_strings(
+    client: TestClient, add_transaction, method, url
+):
+    payload = {
+        "trans_date": "2024-07-14",
+        "amount": 54.99,
+        "vendor": "",
+        "note": "",
+    }
+    response = client.request(method, url, json=payload)
+    data = response.json()
+    assert response.status_code == 422
+    assert data["detail"][0]["type"] == "string_too_short"
+    assert data["detail"][1]["type"] == "string_too_short"
+
+    payload = {
+        "trans_date": "2024-07-14",
+        "amount": 54.99,
+        "vendor": "  t    ",
+        "note": "       ",
+    }
+    response = client.request(method, url, json=payload)
+    data = response.json()
+    assert response.status_code == 422
+    assert data["detail"][0]["type"] == "string_too_short"
+    assert data["detail"][1]["type"] == "string_too_short"
+
+    payload = {
+        "trans_date": "2024-07-14",
+        "amount": 54.99,
+        "vendor": "x" * 50,
+        "note": "x" * 100,
+    }
+    response = client.request(method, url, json=payload)
+    data = response.json()
+    assert response.status_code == 422
+    assert data["detail"][0]["type"] == "string_too_long"
+    assert data["detail"][1]["type"] == "string_too_long"
+
+
 def test_get_transactions(client: TestClient, add_transaction, add_another_transaction):
     response = client.get("/transactions")
     data = response.json()

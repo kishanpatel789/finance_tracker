@@ -32,11 +32,36 @@ def test_create_category(client: TestClient, add_category):
     assert data["budget"] == "200.00"
 
 
-def test_create_category_422(client: TestClient):
+def test_create_category_422_empty_payload(client: TestClient):
     payload = {}
     response = client.post("/categories", json=payload)
 
     assert response.status_code == 422
+
+
+@pytest.mark.parametrize(
+    "method,url", [("POST", "/categories"), ("PATCH", "/categories/1")]
+)
+def test_create_or_update_category_422_bad_strings(
+    client: TestClient, add_category, method, url
+):
+    payload = {"name": ""}
+    response = client.request(method, url, json=payload)
+    data = response.json()
+    assert response.status_code == 422
+    assert data["detail"][0]["type"] == "string_too_short"
+
+    payload = {"name": "  t    "}
+    response = client.request(method, url, json=payload)
+    data = response.json()
+    assert response.status_code == 422
+    assert data["detail"][0]["type"] == "string_too_short"
+
+    payload = {"name": "x" * 50}
+    response = client.request(method, url, json=payload)
+    data = response.json()
+    assert response.status_code == 422
+    assert data["detail"][0]["type"] == "string_too_long"
 
 
 def test_create_duplicate_category(client: TestClient, add_category):

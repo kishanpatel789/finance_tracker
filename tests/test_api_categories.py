@@ -171,6 +171,22 @@ def test_update_category_standardize_name(client: TestClient, add_category):
     assert data["budget"] is None
 
 
+@pytest.mark.focus()
+def test_update_category_update_budget(client: TestClient, add_category):
+    """Test existing category can update budget without aggressive validation."""
+    payload = {
+        "name": "Utilities",
+        "budget": 100.00,
+    }
+    response = client.patch("/categories/1", json=payload)
+    data = response.json()
+
+    assert response.status_code == 200
+    assert data["id"] == 1
+    assert data["name"] == "Utilities"
+    assert data["budget"] == "100.00"
+
+
 def test_update_category_not_found(client: TestClient):
     response = client.patch("/categories/99", json={})
     data = response.json()

@@ -16,7 +16,7 @@ router = APIRouter(
 )
 
 
-def check_for_existing_category(session: SessionDep, category_name: str) -> None:
+def _check_for_existing_category(session: SessionDep, category_name: str) -> None:
     """Check if a category with the given name already exists."""
 
     db_category_existing = session.exec(
@@ -29,11 +29,15 @@ def check_for_existing_category(session: SessionDep, category_name: str) -> None
         )
 
 
+def _category_name_changed(category_data: dict, db_category: Category) -> bool:
+    return "name" in category_data and category_data["name"] != db_category.name
+
+
 @router.post("/", response_model=CategoryRead, status_code=status.HTTP_201_CREATED)
 def create_category(category: CategoryCreate, session: SessionDep):
     db_category = Category.model_validate(category)
 
-    check_for_existing_category(session, category.name)
+    _check_for_existing_category(session, category.name)
 
     session.add(db_category)
     session.commit()
@@ -62,8 +66,8 @@ def update_category(category_id: int, category: CategoryUpdate, session: Session
         raise HTTPException(status_code=404, detail="Category not found")
 
     category_data = category.model_dump(exclude_unset=True)
-    if "name" in category_data and category_data["name"] != db_category.name:
-        check_for_existing_category(session, category.name)
+    if _category_name_changed(category_data, db_category):
+        _check_for_existing_category(session, category.name)
     for key, value in category_data.items():
         setattr(db_category, key, value)
 

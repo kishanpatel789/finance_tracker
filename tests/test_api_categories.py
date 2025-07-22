@@ -64,6 +64,31 @@ def test_create_or_update_category_422_bad_strings(
     assert data["detail"][0]["type"] == "string_too_long"
 
 
+@pytest.mark.parametrize(
+    "method,url", [("POST", "/categories"), ("PATCH", "/categories/1")]
+)
+def test_create_or_update_category_422_bad_amount(
+    client: TestClient, add_category, method, url
+):
+    payload = {"name": "Test Category", "budget": 1 * 10**9}
+    response = client.request(method, url, json=payload)
+    data = response.json()
+    assert response.status_code == 422
+    assert data["detail"][0]["type"] == "decimal_whole_digits"
+
+    payload = {"name": "Test Category", "budget": 1 * 10**11}
+    response = client.request(method, url, json=payload)
+    data = response.json()
+    assert response.status_code == 422
+    assert data["detail"][0]["type"] == "decimal_max_digits"
+
+    payload = {"name": "Test Category", "budget": 1.001}
+    response = client.request(method, url, json=payload)
+    data = response.json()
+    assert response.status_code == 422
+    assert data["detail"][0]["type"] == "decimal_max_places"
+
+
 def test_create_duplicate_category(client: TestClient, add_category):
     payload = {"name": "Utilities", "budget": None}
     response = client.post("/categories", json=payload)

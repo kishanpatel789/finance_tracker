@@ -171,7 +171,6 @@ def test_update_category_standardize_name(client: TestClient, add_category):
     assert data["budget"] is None
 
 
-@pytest.mark.focus()
 def test_update_category_update_budget(client: TestClient, add_category):
     """Test existing category can update budget without aggressive validation."""
     payload = {

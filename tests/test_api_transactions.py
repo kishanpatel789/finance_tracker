@@ -178,6 +178,25 @@ def test_get_transactions(client: TestClient, add_transaction, add_another_trans
     assert data[1]["trans_date"] == "2024-07-14"
 
 
+def test_get_transactions_search(
+    client: TestClient, add_transaction, add_another_transaction
+):
+    response = client.get("/transactions/?q=Utilities")
+    data = response.json()
+    assert response.status_code == 200
+    assert len(data) == 1
+
+    response = client.get("/transactions/?q=%20%20KrOgER%20")
+    data = response.json()
+    assert response.status_code == 200
+    assert len(data) == 1
+
+    response = client.get("/transactions/?q=DoesNotExist")
+    data = response.json()
+    assert response.status_code == 200
+    assert len(data) == 0
+
+
 def test_get_transaction(client: TestClient, add_transaction):
     response = client.get("/transactions/1")
     data = response.json()

@@ -56,26 +56,21 @@ def test_create_category_422_empty_payload(client: TestClient):
 @pytest.mark.parametrize(
     "method,url", [("POST", "/categories"), ("PATCH", "/categories/1")]
 )
+@pytest.mark.parametrize(
+    "payload,expected_error_type",
+    [
+        ({"name": ""}, "string_too_short"),
+        ({"name": " " * 5}, "string_too_short"),
+        ({"name": "x" * 50}, "string_too_long"),
+    ],
+)
 def test_create_or_update_category_422_bad_strings(
-    client: TestClient, add_category, method, url
+    client: TestClient, add_category, method, url, payload, expected_error_type
 ):
-    payload = {"name": ""}
     response = client.request(method, url, json=payload)
     data = response.json()
     assert response.status_code == 422
-    assert data["detail"][0]["type"] == "string_too_short"
-
-    payload = {"name": " " * 5}
-    response = client.request(method, url, json=payload)
-    data = response.json()
-    assert response.status_code == 422
-    assert data["detail"][0]["type"] == "string_too_short"
-
-    payload = {"name": "x" * 50}
-    response = client.request(method, url, json=payload)
-    data = response.json()
-    assert response.status_code == 422
-    assert data["detail"][0]["type"] == "string_too_long"
+    assert data["detail"][0]["type"] == expected_error_type
 
 
 @pytest.mark.parametrize(

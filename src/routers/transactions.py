@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, HTTPException, status
 from sqlmodel import select
 
-from ..dependencies import SessionDep
+from ..dependencies import PaginationDep, SessionDep
 from ..models import (
     Category,
     DeleteResponse,
@@ -37,11 +37,17 @@ def create_transaction(transaction: TransactionCreate, session: SessionDep):
 
 
 @router.get("/", response_model=list[TransactionRead])
-def read_transactions(session: SessionDep):
-    query = select(Transaction).order_by(
-        Transaction.trans_date.desc(),
-        Transaction.vendor.desc(),
-        Transaction.amount.desc(),
+def read_transactions(session: SessionDep, pagination_input: PaginationDep):
+    offset = (pagination_input.page - 1) * pagination_input.size
+    query = (
+        select(Transaction)
+        .order_by(
+            Transaction.trans_date.desc(),
+            Transaction.vendor.desc(),
+            Transaction.amount.desc(),
+        )
+        .offset(offset)
+        .limit(pagination_input.size)
     )
     transactions = session.exec(query).all()
 

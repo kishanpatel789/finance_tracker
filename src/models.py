@@ -97,3 +97,8 @@ class TransactionRead(TransactionBase):
 
 class DeleteResponse(BaseModel):
     detail: str
+
+
+class PaginationInput(BaseModel):
+    page: int = Field(default=1, ge=1)
+    size: int = Field(default=25, ge=1, le=50)

@@ -38,7 +38,13 @@ def create_transaction(transaction: TransactionCreate, session: SessionDep):
 
 @router.get("/", response_model=list[TransactionRead])
 def read_transactions(session: SessionDep):
-    transactions = session.exec(select(Transaction)).all()
+    query = select(Transaction).order_by(
+        Transaction.trans_date.desc(),
+        Transaction.vendor.desc(),
+        Transaction.amount.desc(),
+    )
+    transactions = session.exec(query).all()
+
     return transactions
 
 

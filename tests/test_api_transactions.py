@@ -174,6 +174,8 @@ def test_get_transactions(client: TestClient, add_transaction, add_another_trans
 
     assert response.status_code == 200
     assert len(data) == 2
+    assert data[0]["trans_date"] == "2025-11-02"
+    assert data[1]["trans_date"] == "2024-07-14"
 
 
 def test_get_transaction(client: TestClient, add_transaction):

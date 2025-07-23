@@ -178,7 +178,7 @@ def test_get_transactions(client: TestClient, add_transaction, add_another_trans
     assert data[1]["trans_date"] == "2024-07-14"
 
 
-def test_get_transactions_search(
+def test_get_transactions_search_by_term(
     client: TestClient, add_transaction, add_another_transaction
 ):
     response = client.get("/transactions/?q=Utilities")

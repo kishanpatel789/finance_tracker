@@ -81,26 +81,21 @@ def test_create_or_update_category_422_bad_strings(
 @pytest.mark.parametrize(
     "method,url", [("POST", "/categories"), ("PATCH", "/categories/1")]
 )
+@pytest.mark.parametrize(
+    "payload,expected_error_type",
+    [
+        ({"name": "Test Category", "budget": 1 * 10**9}, "decimal_whole_digits"),
+        ({"name": "Test Category", "budget": 1 * 10**11}, "decimal_max_digits"),
+        ({"name": "Test Category", "budget": 1.001}, "decimal_max_places"),
+    ],
+)
 def test_create_or_update_category_422_bad_amount(
-    client: TestClient, add_category, method, url
+    client: TestClient, add_category, method, url, payload, expected_error_type
 ):
-    payload = {"name": "Test Category", "budget": 1 * 10**9}
     response = client.request(method, url, json=payload)
     data = response.json()
     assert response.status_code == 422
-    assert data["detail"][0]["type"] == "decimal_whole_digits"
-
-    payload = {"name": "Test Category", "budget": 1 * 10**11}
-    response = client.request(method, url, json=payload)
-    data = response.json()
-    assert response.status_code == 422
-    assert data["detail"][0]["type"] == "decimal_max_digits"
-
-    payload = {"name": "Test Category", "budget": 1.001}
-    response = client.request(method, url, json=payload)
-    data = response.json()
-    assert response.status_code == 422
-    assert data["detail"][0]["type"] == "decimal_max_places"
+    assert data["detail"][0]["type"] == expected_error_type
 
 
 def test_create_duplicate_category(client: TestClient, add_category):

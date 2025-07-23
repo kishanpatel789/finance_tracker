@@ -91,44 +91,46 @@ def test_create_transaction_422(client: TestClient):
 @pytest.mark.parametrize(
     "method,url", [("POST", "/transactions"), ("PATCH", "/transactions/1")]
 )
+@pytest.mark.parametrize(
+    "payload,expected_error_type",
+    [
+        (
+            {
+                "trans_date": "2024-07-14",
+                "amount": 54.99,
+                "vendor": "",
+                "note": "",
+            },
+            "string_too_short",
+        ),
+        (
+            {
+                "trans_date": "2024-07-14",
+                "amount": 54.99,
+                "vendor": " " * 5,
+                "note": " " * 5,
+            },
+            "string_too_short",
+        ),
+        (
+            {
+                "trans_date": "2024-07-14",
+                "amount": 54.99,
+                "vendor": "x" * 50,
+                "note": "x" * 100,
+            },
+            "string_too_long",
+        ),
+    ],
+)
 def test_create_or_update_transaction_422_bad_strings(
-    client: TestClient, add_transaction, method, url
+    client: TestClient, add_transaction, method, url, payload, expected_error_type
 ):
-    payload = {
-        "trans_date": "2024-07-14",
-        "amount": 54.99,
-        "vendor": "",
-        "note": "",
-    }
     response = client.request(method, url, json=payload)
     data = response.json()
     assert response.status_code == 422
-    assert data["detail"][0]["type"] == "string_too_short"
-    assert data["detail"][1]["type"] == "string_too_short"
-
-    payload = {
-        "trans_date": "2024-07-14",
-        "amount": 54.99,
-        "vendor": " " * 5,
-        "note": " " * 5,
-    }
-    response = client.request(method, url, json=payload)
-    data = response.json()
-    assert response.status_code == 422
-    assert data["detail"][0]["type"] == "string_too_short"
-    assert data["detail"][1]["type"] == "string_too_short"
-
-    payload = {
-        "trans_date": "2024-07-14",
-        "amount": 54.99,
-        "vendor": "x" * 50,
-        "note": "x" * 100,
-    }
-    response = client.request(method, url, json=payload)
-    data = response.json()
-    assert response.status_code == 422
-    assert data["detail"][0]["type"] == "string_too_long"
-    assert data["detail"][1]["type"] == "string_too_long"
+    assert data["detail"][0]["type"] == expected_error_type
+    assert data["detail"][1]["type"] == expected_error_type
 
 
 @pytest.mark.parametrize(

@@ -1,13 +1,33 @@
+import re
 from datetime import date, datetime, timezone
 from decimal import Decimal
 
-from pydantic import BaseModel
-from sqlmodel import Column, Field, Numeric, Relationship, SQLModel
+from pydantic import BaseModel, ConfigDict, field_validator
+from sqlmodel import Field, Relationship, SQLModel
 
 
-class CategoryBase(SQLModel):
-    name: str
-    budget: Decimal | None = Field(sa_column=Column(Numeric(10, 2)))
+class MySQLModel(SQLModel):
+    model_config = ConfigDict(
+        str_strip_whitespace=True,
+    )
+
+
+field_money_dec_or_none = Field(max_digits=10, decimal_places=2, default=None)
+field_money_dec = Field(max_digits=10, decimal_places=2)
+field_str_1_25_or_none = Field(min_length=1, max_length=25, default=None)
+field_str_1_25 = Field(min_length=1, max_length=25)
+
+
+class CategoryBase(MySQLModel):
+    name: str = field_str_1_25
+    budget: Decimal | None = field_money_dec_or_none
+
+    @field_validator("name", mode="before")
+    @classmethod
+    def standardize_name(cls, value: str) -> str:
+        value = re.sub(r"\s+", " ", value)
+        value = value.title()
+        return value
 
 
 class Category(CategoryBase, table=True):
@@ -20,25 +40,24 @@ class CategoryCreate(CategoryBase):
     pass
 
 
-class CategoryUpdate(SQLModel):
-    name: str | None = None
-    budget: Decimal | None = None
+class CategoryUpdate(CategoryBase):
+    name: str | None = field_str_1_25_or_none
 
 
 class CategoryRead(CategoryBase):
     id: int
 
 
-class CategoryReadNested(SQLModel):
+class CategoryReadNested(MySQLModel):
     id: int
     name: str
 
 
-class TransactionBase(SQLModel):
+class TransactionBase(MySQLModel):
     trans_date: date
-    amount: Decimal = Field(sa_column=Column(Numeric(10, 2)))
-    vendor: str
-    note: str | None = None
+    amount: Decimal = field_money_dec
+    vendor: str = field_str_1_25
+    note: str | None = Field(min_length=1, max_length=50, default=None)
 
 
 class Transaction(TransactionBase, table=True):
@@ -61,11 +80,11 @@ class TransactionCreate(TransactionBase):
     category_id: int | None = None
 
 
-class TransactionUpdate(SQLModel):
+class TransactionUpdate(TransactionBase):
     trans_date: datetime | None = None
-    amount: Decimal | None = None
-    vendor: str | None = None
-    note: str | None = None
+    amount: Decimal | None = field_money_dec_or_none
+    vendor: str | None = field_str_1_25_or_none
+
     category_id: int | None = None
 
 

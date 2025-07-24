@@ -1,5 +1,5 @@
 import re
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from typing import Annotated
 
 from fastapi import APIRouter, HTTPException, Query, status
@@ -43,6 +43,8 @@ def read_transactions(
     session: SessionDep,
     pagination_input: PaginationDep,
     q: Annotated[str | None, Query(max_length=40)] = None,
+    start_date: date | None = None,
+    end_date: date | None = None,
 ):
     query = select(Transaction)
 
@@ -60,7 +62,11 @@ def read_transactions(
         )
 
     # date range filter
-    # TODO
+    if start_date is not None:
+        query = query.where(Transaction.trans_date >= start_date)
+
+    if end_date is not None:
+        query = query.where(Transaction.trans_date <= end_date)
 
     # pagination
     offset = (pagination_input.page - 1) * pagination_input.size

@@ -178,7 +178,7 @@ def test_create_or_update_transaction_422_bad_amount(
 
 def test_get_transactions(client: TestClient, add_transaction, add_another_transaction):
     response = client.get("/transactions")
-    data = response.json()
+    data = response.json()["data"]
 
     assert response.status_code == 200
     assert len(data) == 2
@@ -194,7 +194,7 @@ def test_get_transactions_search_by_term(
     client: TestClient, add_transaction, add_another_transaction, term, expected_count
 ):
     response = client.get(f"/transactions/?q={term}")
-    data = response.json()
+    data = response.json()["data"]
     assert response.status_code == 200
     assert len(data) == expected_count
 
@@ -213,7 +213,7 @@ def test_get_transactions_search_by_date(
 ):
     url_query = generate_url_query({"start_date": start_date, "end_date": end_date})
     response = client.get(f"/transactions/?{url_query}")
-    data = response.json()
+    data = response.json()["data"]
     assert response.status_code == 200
     assert len(data) == expected_count
 

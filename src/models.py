@@ -95,6 +95,11 @@ class TransactionRead(TransactionBase):
     category: CategoryReadNested | None = None
 
 
+class TransactionPage(BaseModel):
+    data: list[TransactionRead]
+    total_count: int
+
+
 class DeleteResponse(BaseModel):
     detail: str
 

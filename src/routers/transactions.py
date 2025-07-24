@@ -3,7 +3,7 @@ from datetime import date, datetime, timezone
 from typing import Annotated
 
 from fastapi import APIRouter, HTTPException, Query, status
-from sqlmodel import or_, select
+from sqlmodel import func, or_, select
 
 from ..dependencies import PaginationDep, SessionDep
 from ..models import (
@@ -11,6 +11,7 @@ from ..models import (
     DeleteResponse,
     Transaction,
     TransactionCreate,
+    TransactionPage,
     TransactionRead,
     TransactionUpdate,
 )
@@ -38,7 +39,7 @@ def create_transaction(transaction: TransactionCreate, session: SessionDep):
     return db_transaction
 
 
-@router.get("/", response_model=list[TransactionRead])
+@router.get("/", response_model=TransactionPage)
 def read_transactions(
     session: SessionDep,
     pagination_input: PaginationDep,
@@ -68,8 +69,23 @@ def read_transactions(
     if end_date is not None:
         query = query.where(Transaction.trans_date <= end_date)
 
+    # get total record count
+    count_query = select(func.count(1).label("cnt")).select_from(query.subquery())
+    total_row_count = session.exec(count_query).one()
+
+    # calculate total page count
+    total_page_count = (
+        total_row_count + pagination_input.size - 1
+    ) // pagination_input.size
+
+    # determine actual page to give; give last page if requested page is out of bounds
+    page = min(
+        pagination_input.page,
+        max(total_page_count, 1),  # give at least page 1 if no records
+    )
+
     # pagination
-    offset = (pagination_input.page - 1) * pagination_input.size
+    offset = (page - 1) * pagination_input.size
     query = (
         query.order_by(
             Transaction.trans_date.desc(),
@@ -81,7 +97,12 @@ def read_transactions(
     )
     transactions = session.exec(query).all()
 
-    return transactions
+    page_output = TransactionPage(
+        data=transactions,
+        total_count=total_row_count,
+    )
+
+    return page_output
 
 
 @router.get("/{transaction_id}", response_model=TransactionRead)

@@ -54,8 +54,11 @@ def generate_transactions(categories: list[Category], n=250) -> list[Transaction
 
 
 def get_engine():
-    DATABASE_URL = config("DATABASE_URL_DUMMY", "sqlite:///finance_tracker.sqlite")
-    engine = create_engine(DATABASE_URL, echo=False)
+    DATABASE_URL_DUMMY = config(
+        "DATABASE_URL_DUMMY", "sqlite:///finance_tracker.sqlite"
+    )
+    DEBUG = config("DEBUG", default=False, cast=bool)
+    engine = create_engine(DATABASE_URL_DUMMY, echo=DEBUG)
     return engine
 
 

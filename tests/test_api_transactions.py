@@ -36,11 +36,11 @@ def add_another_transaction(client: TestClient):
     return response
 
 
-def test_add_transaction(client: TestClient, add_transaction):
+def test_create_transaction(client: TestClient, add_transaction):
     response = add_transaction
     data = response.json()
 
-    assert response.status_code == 200
+    assert response.status_code == 201
     assert data["id"] == 1
     assert data["trans_date"] == "2024-07-14"
     assert data["amount"] == "54.99"
@@ -48,24 +48,26 @@ def test_add_transaction(client: TestClient, add_transaction):
     assert data["note"] == "Fiber Internet"
     assert data["category"]["id"] == 1
     assert data["category"]["name"] == "Utilities"
+    assert data["created_at"] is not None
 
 
-def test_add_another_transaction(
+def test_create_another_transaction(
     client: TestClient, add_transaction, add_another_transaction
 ):
     response = add_another_transaction
     data = response.json()
 
-    assert response.status_code == 200
+    assert response.status_code == 201
     assert data["id"] == 2
     assert data["trans_date"] == "2025-11-02"
     assert data["amount"] == "84.99"
     assert data["vendor"] == "Kroger"
     assert data["note"] is None
     assert data["category"] is None
+    assert data["created_at"] is not None
 
 
-def test_add_transaction_invalid_category(client: TestClient):
+def test_create_transaction_invalid_category(client: TestClient):
     payload = {
         "trans_date": "2025-11-02",
         "amount": 84.99,
@@ -79,11 +81,91 @@ def test_add_transaction_invalid_category(client: TestClient):
     assert data["detail"] == "Category not found"
 
 
-def test_add_transaction_422(client: TestClient):
+def test_create_transaction_422(client: TestClient):
     payload = {}
     response = client.post("/transactions", json=payload)
 
     assert response.status_code == 422
+
+
+@pytest.mark.parametrize(
+    "method,url", [("POST", "/transactions"), ("PATCH", "/transactions/1")]
+)
+def test_create_or_update_transaction_422_bad_strings(
+    client: TestClient, add_transaction, method, url
+):
+    payload = {
+        "trans_date": "2024-07-14",
+        "amount": 54.99,
+        "vendor": "",
+        "note": "",
+    }
+    response = client.request(method, url, json=payload)
+    data = response.json()
+    assert response.status_code == 422
+    assert data["detail"][0]["type"] == "string_too_short"
+    assert data["detail"][1]["type"] == "string_too_short"
+
+    payload = {
+        "trans_date": "2024-07-14",
+        "amount": 54.99,
+        "vendor": " " * 5,
+        "note": " " * 5,
+    }
+    response = client.request(method, url, json=payload)
+    data = response.json()
+    assert response.status_code == 422
+    assert data["detail"][0]["type"] == "string_too_short"
+    assert data["detail"][1]["type"] == "string_too_short"
+
+    payload = {
+        "trans_date": "2024-07-14",
+        "amount": 54.99,
+        "vendor": "x" * 50,
+        "note": "x" * 100,
+    }
+    response = client.request(method, url, json=payload)
+    data = response.json()
+    assert response.status_code == 422
+    assert data["detail"][0]["type"] == "string_too_long"
+    assert data["detail"][1]["type"] == "string_too_long"
+
+
+@pytest.mark.parametrize(
+    "method,url", [("POST", "/transactions"), ("PATCH", "/transactions/1")]
+)
+def test_create_or_update_transaction_422_bad_amount(
+    client: TestClient, add_transaction, method, url
+):
+    payload = {
+        "trans_date": "2024-07-14",
+        "amount": 1 * 10**9,
+        "vendor": "AT&T",
+    }
+    response = client.request(method, url, json=payload)
+    data = response.json()
+    assert response.status_code == 422
+    assert data["detail"][0]["type"] == "decimal_whole_digits"
+
+    payload = {
+        "trans_date": "2024-07-14",
+        "amount": 1 * 10**11,
+        "vendor": "AT&T",
+    }
+    response = client.request(method, url, json=payload)
+    data = response.json()
+    assert response.status_code == 422
+    assert data["detail"][0]["type"] == "decimal_max_digits"
+
+    payload = {
+        "trans_date": "2024-07-14",
+        "amount": 1.001,
+        "vendor": "AT&T",
+    }
+    response = client.request(method, url, json=payload)
+    data = response.json()
+    assert response.status_code == 422
+    assert data["detail"][0]["type"] == "decimal_max_places"
 
 
 def test_get_transactions(client: TestClient, add_transaction, add_another_transaction):
@@ -109,6 +191,69 @@ def test_get_transaction(client: TestClient, add_transaction):
 
 def test_get_transaction_not_found(client: TestClient):
     response = client.get("/transactions/99")
+    data = response.json()
+
+    assert response.status_code == 404
+    assert data["detail"] == "Transaction not found"
+
+
+def test_update_transaction(client: TestClient, add_category, add_another_transaction):
+    payload = {
+        "amount": "100.00",
+        "note": "i needed it",
+        "vendor": "Amazon",
+        "category_id": 1,
+    }
+    response = client.patch("/transactions/1", json=payload)
+    data = response.json()
+
+    assert response.status_code == 200
+    assert data["id"] == 1
+    assert data["trans_date"] == "2025-11-02"
+    assert data["amount"] == "100.00"
+    assert data["vendor"] == "Amazon"
+    assert data["note"] == "i needed it"
+    assert data["category"]["id"] == 1
+    assert data["category"]["name"] == "Utilities"
+    assert data["created_at"] is not None
+    assert data["updated_at"] is not None
+
+
+def test_update_transaction_invalid_category(
+    client: TestClient, add_another_transaction
+):
+    payload = {
+        "category_id": 99,
+    }
+    response = client.patch("/transactions/1", json=payload)
+    data = response.json()
+
+    assert response.status_code == 404
+    assert data["detail"] == "Category not found"
+
+
+def test_update_transaction_not_found(client: TestClient):
+    response = client.patch("/transactions/99", json={})
+    data = response.json()
+
+    assert response.status_code == 404
+    assert data["detail"] == "Transaction not found"
+
+
+def test_delete_transaction(client: TestClient, add_transaction):
+    response = client.delete("/transactions/1")
+    data = response.json()
+
+    assert response.status_code == 200
+    assert data["detail"] == "Transaction with ID 1 deleted successfully"
+
+    response = client.get("/transactions/1")
+
+    assert response.status_code == 404
+
+
+def test_delete_transaction_not_found(client: TestClient):
+    response = client.delete("/transactions/99")
     data = response.json()
 
     assert response.status_code == 404

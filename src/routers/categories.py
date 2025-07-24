@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, status
 from sqlmodel import select
 
 from ..dependencies import SessionDep
@@ -16,9 +16,29 @@ router = APIRouter(
 )
 
 
-@router.post("/", response_model=CategoryRead)
+def _check_for_existing_category(session: SessionDep, category_name: str) -> None:
+    """Check if a category with the given name already exists."""
+
+    db_category_existing = session.exec(
+        select(Category).where(Category.name == category_name)
+    ).first()
+    if db_category_existing is not None:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Category with name '{category_name}' already exists (ID {db_category_existing.id})",
+        )
+
+
+def _category_name_changed(category_data: dict, db_category: Category) -> bool:
+    return "name" in category_data and category_data["name"] != db_category.name
+
+
+@router.post("/", response_model=CategoryRead, status_code=status.HTTP_201_CREATED)
 def create_category(category: CategoryCreate, session: SessionDep):
     db_category = Category.model_validate(category)
+
+    _check_for_existing_category(session, category.name)
+
     session.add(db_category)
     session.commit()
     session.refresh(db_category)
@@ -46,6 +66,8 @@ def update_category(category_id: int, category: CategoryUpdate, session: Session
         raise HTTPException(status_code=404, detail="Category not found")
 
     category_data = category.model_dump(exclude_unset=True)
+    if _category_name_changed(category_data, db_category):
+        _check_for_existing_category(session, category.name)
     for key, value in category_data.items():
         setattr(db_category, key, value)
 

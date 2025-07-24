@@ -2,6 +2,7 @@ import random
 from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal
 
+from decouple import config
 from faker import Faker
 from sqlmodel import Session, create_engine
 
@@ -53,11 +54,15 @@ def generate_transactions(categories: list[Category], n=250) -> list[Transaction
 
 
 def get_engine():
-    engine = create_engine("sqlite:///finance_tracker.sqlite", echo=False)
+    DATABASE_URL_DUMMY = config(
+        "DATABASE_URL_DUMMY", "sqlite:///finance_tracker.sqlite"
+    )
+    DEBUG = config("DEBUG", default=False, cast=bool)
+    engine = create_engine(DATABASE_URL_DUMMY, echo=DEBUG)
     return engine
 
 
-def create_db_and_tables(engine):
+def recreate_db_and_tables(engine):
     SQLModel.metadata.drop_all(engine)
     SQLModel.metadata.create_all(engine)
 
@@ -84,7 +89,7 @@ def generate_data(engine):
 
 def main():
     engine = get_engine()
-    create_db_and_tables(engine)
+    recreate_db_and_tables(engine)
     generate_data(engine)
 
 

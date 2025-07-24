@@ -1,9 +1,11 @@
+import re
 from datetime import datetime, timezone
+from typing import Annotated
 
-from fastapi import APIRouter, HTTPException, status
-from sqlmodel import select
+from fastapi import APIRouter, HTTPException, Query, status
+from sqlmodel import or_, select
 
-from ..dependencies import SessionDep
+from ..dependencies import PaginationDep, SessionDep
 from ..models import (
     Category,
     DeleteResponse,
@@ -37,8 +39,42 @@ def create_transaction(transaction: TransactionCreate, session: SessionDep):
 
 
 @router.get("/", response_model=list[TransactionRead])
-def read_transactions(session: SessionDep):
-    transactions = session.exec(select(Transaction)).all()
+def read_transactions(
+    session: SessionDep,
+    pagination_input: PaginationDep,
+    q: Annotated[str | None, Query(max_length=40)] = None,
+):
+    query = select(Transaction)
+
+    # search filter
+    if q is not None:
+        q = q.strip().lower()
+        q = re.sub(r"\s+", " ", q)
+        search_term = f"%{q}%"
+        query = query.where(
+            or_(
+                Transaction.vendor.ilike(search_term),
+                Transaction.note.ilike(search_term),
+                Transaction.category.has(Category.name.ilike(search_term)),
+            )
+        )
+
+    # date range filter
+    # TODO
+
+    # pagination
+    offset = (pagination_input.page - 1) * pagination_input.size
+    query = (
+        query.order_by(
+            Transaction.trans_date.desc(),
+            Transaction.vendor.desc(),
+            Transaction.amount.desc(),
+        )
+        .offset(offset)
+        .limit(pagination_input.size)
+    )
+    transactions = session.exec(query).all()
+
     return transactions
 
 

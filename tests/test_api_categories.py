@@ -56,51 +56,41 @@ def test_create_category_422_empty_payload(client: TestClient):
 @pytest.mark.parametrize(
     "method,url", [("POST", "/categories"), ("PATCH", "/categories/1")]
 )
+@pytest.mark.parametrize(
+    "payload,expected_error_type",
+    [
+        ({"name": ""}, "string_too_short"),
+        ({"name": " " * 5}, "string_too_short"),
+        ({"name": "x" * 50}, "string_too_long"),
+    ],
+)
 def test_create_or_update_category_422_bad_strings(
-    client: TestClient, add_category, method, url
+    client: TestClient, add_category, method, url, payload, expected_error_type
 ):
-    payload = {"name": ""}
     response = client.request(method, url, json=payload)
     data = response.json()
     assert response.status_code == 422
-    assert data["detail"][0]["type"] == "string_too_short"
-
-    payload = {"name": " " * 5}
-    response = client.request(method, url, json=payload)
-    data = response.json()
-    assert response.status_code == 422
-    assert data["detail"][0]["type"] == "string_too_short"
-
-    payload = {"name": "x" * 50}
-    response = client.request(method, url, json=payload)
-    data = response.json()
-    assert response.status_code == 422
-    assert data["detail"][0]["type"] == "string_too_long"
+    assert data["detail"][0]["type"] == expected_error_type
 
 
 @pytest.mark.parametrize(
     "method,url", [("POST", "/categories"), ("PATCH", "/categories/1")]
 )
+@pytest.mark.parametrize(
+    "payload,expected_error_type",
+    [
+        ({"name": "Test Category", "budget": 1 * 10**9}, "decimal_whole_digits"),
+        ({"name": "Test Category", "budget": 1 * 10**11}, "decimal_max_digits"),
+        ({"name": "Test Category", "budget": 1.001}, "decimal_max_places"),
+    ],
+)
 def test_create_or_update_category_422_bad_amount(
-    client: TestClient, add_category, method, url
+    client: TestClient, add_category, method, url, payload, expected_error_type
 ):
-    payload = {"name": "Test Category", "budget": 1 * 10**9}
     response = client.request(method, url, json=payload)
     data = response.json()
     assert response.status_code == 422
-    assert data["detail"][0]["type"] == "decimal_whole_digits"
-
-    payload = {"name": "Test Category", "budget": 1 * 10**11}
-    response = client.request(method, url, json=payload)
-    data = response.json()
-    assert response.status_code == 422
-    assert data["detail"][0]["type"] == "decimal_max_digits"
-
-    payload = {"name": "Test Category", "budget": 1.001}
-    response = client.request(method, url, json=payload)
-    data = response.json()
-    assert response.status_code == 422
-    assert data["detail"][0]["type"] == "decimal_max_places"
+    assert data["detail"][0]["type"] == expected_error_type
 
 
 def test_create_duplicate_category(client: TestClient, add_category):
@@ -171,7 +161,6 @@ def test_update_category_standardize_name(client: TestClient, add_category):
     assert data["budget"] is None
 
 
-@pytest.mark.focus()
 def test_update_category_update_budget(client: TestClient, add_category):
     """Test existing category can update budget without aggressive validation."""
     payload = {

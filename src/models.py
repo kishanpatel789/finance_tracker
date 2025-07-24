@@ -1,9 +1,28 @@
 import re
 from datetime import date, datetime, timezone
 from decimal import Decimal
+from typing import Annotated
 
-from pydantic import BaseModel, ConfigDict, field_validator
+from fastapi import Query
+from pydantic import BaseModel, ConfigDict, HttpUrl, field_validator
 from sqlmodel import Field, Relationship, SQLModel
+
+
+class PaginationInput(BaseModel):
+    page: int = Field(default=1, ge=1)
+    size: int = Field(default=25, ge=1, le=50)
+
+
+class TransactionQueryParams(BaseModel):
+    q: Annotated[str | None, Query(max_length=40)] = None
+    start_date: date | None = None
+    end_date: date | None = None
+
+
+class PageLinks(BaseModel):
+    current: HttpUrl
+    prev: HttpUrl | None = None
+    next: HttpUrl | None = None
 
 
 class MySQLModel(SQLModel):
@@ -98,12 +117,8 @@ class TransactionRead(TransactionBase):
 class TransactionPage(BaseModel):
     data: list[TransactionRead]
     total_count: int
+    links: PageLinks
 
 
 class DeleteResponse(BaseModel):
     detail: str
-
-
-class PaginationInput(BaseModel):
-    page: int = Field(default=1, ge=1)
-    size: int = Field(default=25, ge=1, le=50)

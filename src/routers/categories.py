@@ -67,7 +67,7 @@ def update_category(category_id: int, category: CategoryUpdate, session: Session
 
     category_data = category.model_dump(exclude_unset=True)
     if _category_name_changed(category_data, db_category):
-        _check_for_existing_category(session, category.name)
+        _check_for_existing_category(session, category_data["name"])
     for key, value in category_data.items():
         setattr(db_category, key, value)
 

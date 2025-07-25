@@ -1,12 +1,22 @@
 from urllib.parse import urlencode
 
 from fastapi import Request
+from pydantic import HttpUrl, TypeAdapter
 
 from .models import PageLinks
 
 
 def generate_url_query(query_map: dict) -> str:
     return urlencode({k: v for k, v in query_map.items() if v is not None})
+
+
+def required_url(url: str) -> HttpUrl:
+    return TypeAdapter(HttpUrl).validate_python(url)
+
+
+def optional_url(url: str | None) -> HttpUrl | None:
+    if url is not None:
+        return TypeAdapter(HttpUrl).validate_python(url)
 
 
 def generate_links(
@@ -32,7 +42,7 @@ def generate_links(
         next_ = None
 
     return PageLinks(
-        current=current,
-        prev=prev,
-        next=next_,
+        current=required_url(current),
+        prev=optional_url(prev),
+        next=optional_url(next_),
     )

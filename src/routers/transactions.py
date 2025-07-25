@@ -49,12 +49,14 @@ def read_transactions(
     pagination_input: Annotated[PaginationInput, Depends()],
     query_params: Annotated[TransactionQueryParams, Depends()],
 ):
-    query = select(Transaction)
+    query_map: dict = query_params.model_dump()
 
     # search filter
+    query = select(Transaction)
     if query_params.q is not None:
         q = query_params.q.strip().lower()
         q = re.sub(r"\s+", " ", q)
+        query_map.update({"q": q})
         search_term = f"%{q}%"
         query = query.where(
             or_(
@@ -86,7 +88,6 @@ def read_transactions(
     )
 
     # build links
-    query_map = query_params.model_dump()
     query_map.update(dict(page=page, size=pagination_input.size))
     links = generate_links(
         current_page=page,

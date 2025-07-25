@@ -1,7 +1,7 @@
 import pytest
 from fastapi.testclient import TestClient
 
-from src.helpers import generate_url_query
+from src.api.helpers import generate_url_query
 
 
 @pytest.fixture()

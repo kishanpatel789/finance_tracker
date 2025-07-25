@@ -1,9 +1,9 @@
 import pytest
 from fastapi.testclient import TestClient
 
-from src.dependencies import Session, create_engine, get_session
-from src.main import app
-from src.models import SQLModel
+from src.api.dependencies import Session, create_engine, get_session
+from src.api.main import app
+from src.api.models import SQLModel
 
 
 @pytest.fixture(scope="function")

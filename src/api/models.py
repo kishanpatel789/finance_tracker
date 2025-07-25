@@ -25,6 +25,12 @@ class PageLinks(BaseModel):
     next: HttpUrl | None = None
 
 
+class PageBase(BaseModel):
+    data: list
+    total_count: int
+    links: PageLinks
+
+
 class MySQLModel(SQLModel):
     model_config = ConfigDict(
         str_strip_whitespace=True,
@@ -121,10 +127,8 @@ class TransactionRead(TransactionBase):
     category: CategoryReadNested | None = None
 
 
-class TransactionPage(BaseModel):
+class TransactionPage(PageBase):
     data: list[TransactionRead]
-    total_count: int
-    links: PageLinks
 
 
 class DeleteResponse(BaseModel):

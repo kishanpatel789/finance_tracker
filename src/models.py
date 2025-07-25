@@ -62,6 +62,13 @@ class CategoryCreate(CategoryBase):
 class CategoryUpdate(CategoryBase):
     name: str | None = StringFieldOrNone
 
+    @field_validator("name", mode="before")
+    @classmethod
+    def reject_null_name(cls, value: str | None) -> str:
+        if value is None:
+            raise ValueError("Field 'name' cannot be null")
+        return value
+
 
 class CategoryRead(CategoryBase):
     id: int

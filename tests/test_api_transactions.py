@@ -218,6 +218,27 @@ def test_get_transactions_search_by_date(
     assert len(data) == expected_count
 
 
+def test_get_transactions_pagination(
+    client: TestClient, add_transaction, add_another_transaction
+):
+    response = client.get("/transactions/?page=1&size=1")
+    data = response.json()
+
+    assert response.status_code == 200
+    assert len(data["data"]) == 1
+    assert data["total_count"] == 2
+    assert data["links"]["next"] is not None
+    assert data["links"]["prev"] is None
+
+    # check next page
+    response = client.get(data["links"]["next"])
+    data = response.json()
+    assert len(data["data"]) == 1
+    assert data["total_count"] == 2
+    assert data["links"]["next"] is None
+    assert data["links"]["prev"] is not None
+
+
 def test_get_transaction(client: TestClient, add_transaction):
     response = client.get("/transactions/1")
     data = response.json()

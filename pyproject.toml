@@ -34,3 +34,6 @@ apirun = "uv run fastapi dev src/main.py"
 [tool.poe.tasks.dummy]
 cmd = "uv run scripts/generate_dummy_data.py"
 env = { PYTHONPATH = "." }
+
+[tool.ty.src]
+exclude = ["migrations"]

@@ -161,6 +161,14 @@ def test_update_category_standardize_name(client: TestClient, add_category):
     assert data["budget"] is None
 
 
+def test_update_category_422_null_name(client: TestClient, add_category):
+    payload = {"name": None}
+    response = client.patch("/categories/1", json=payload)
+
+    assert response.status_code == 422
+    assert response.json()["detail"][0]["type"] == "value_error"
+
+
 def test_update_category_update_budget(client: TestClient, add_category):
     """Test existing category can update budget without aggressive validation."""
     payload = {

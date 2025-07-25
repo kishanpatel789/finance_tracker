@@ -2,15 +2,19 @@ import re
 from datetime import datetime, timezone
 from typing import Annotated
 
-from fastapi import APIRouter, HTTPException, Query, status
-from sqlmodel import or_, select
+from fastapi import APIRouter, Depends, HTTPException, Request, status
+from sqlmodel import func, or_, select
 
-from ..dependencies import PaginationDep, SessionDep
+from ..dependencies import SessionDep
+from ..helpers import generate_links
 from ..models import (
     Category,
     DeleteResponse,
+    PaginationInput,
     Transaction,
     TransactionCreate,
+    TransactionPage,
+    TransactionQueryParams,
     TransactionRead,
     TransactionUpdate,
 )
@@ -38,18 +42,21 @@ def create_transaction(transaction: TransactionCreate, session: SessionDep):
     return db_transaction
 
 
-@router.get("/", response_model=list[TransactionRead])
+@router.get("/", response_model=TransactionPage)
 def read_transactions(
+    request: Request,
     session: SessionDep,
-    pagination_input: PaginationDep,
-    q: Annotated[str | None, Query(max_length=40)] = None,
+    pagination_input: Annotated[PaginationInput, Depends()],
+    query_params: Annotated[TransactionQueryParams, Depends()],
 ):
-    query = select(Transaction)
+    query_map: dict = query_params.model_dump()
 
     # search filter
-    if q is not None:
-        q = q.strip().lower()
+    query = select(Transaction)
+    if query_params.q is not None:
+        q = query_params.q.strip().lower()
         q = re.sub(r"\s+", " ", q)
+        query_map.update({"q": q})
         search_term = f"%{q}%"
         query = query.where(
             or_(
@@ -60,10 +67,37 @@ def read_transactions(
         )
 
     # date range filter
-    # TODO
+    if query_params.start_date is not None:
+        query = query.where(Transaction.trans_date >= query_params.start_date)
+    if query_params.end_date is not None:
+        query = query.where(Transaction.trans_date <= query_params.end_date)
 
-    # pagination
-    offset = (pagination_input.page - 1) * pagination_input.size
+    # get total record count
+    count_query = select(func.count(1).label("cnt")).select_from(query.subquery())
+    total_row_count = session.exec(count_query).one()
+
+    # calculate total page count
+    total_page_count = (
+        total_row_count + pagination_input.size - 1
+    ) // pagination_input.size
+
+    # determine actual page to give; give last page if requested page is out of bounds
+    page = min(
+        pagination_input.page,
+        max(total_page_count, 1),  # give at least page 1 if no records
+    )
+
+    # build links
+    query_map.update(dict(page=page, size=pagination_input.size))
+    links = generate_links(
+        current_page=page,
+        total_page_count=total_page_count,
+        request=request,
+        query_map=query_map,
+    )
+
+    # get paginated data
+    offset = (page - 1) * pagination_input.size
     query = (
         query.order_by(
             Transaction.trans_date.desc(),
@@ -75,7 +109,13 @@ def read_transactions(
     )
     transactions = session.exec(query).all()
 
-    return transactions
+    page_output = TransactionPage(
+        data=transactions,
+        total_count=total_row_count,
+        links=links,
+    )
+
+    return page_output
 
 
 @router.get("/{transaction_id}", response_model=TransactionRead)

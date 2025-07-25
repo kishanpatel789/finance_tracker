@@ -1,6 +1,8 @@
 import pytest
 from fastapi.testclient import TestClient
 
+from src.helpers import generate_url_query
+
 
 @pytest.fixture()
 def add_category(client: TestClient):
@@ -176,7 +178,7 @@ def test_create_or_update_transaction_422_bad_amount(
 
 def test_get_transactions(client: TestClient, add_transaction, add_another_transaction):
     response = client.get("/transactions")
-    data = response.json()
+    data = response.json()["data"]
 
     assert response.status_code == 200
     assert len(data) == 2
@@ -192,9 +194,49 @@ def test_get_transactions_search_by_term(
     client: TestClient, add_transaction, add_another_transaction, term, expected_count
 ):
     response = client.get(f"/transactions/?q={term}")
-    data = response.json()
+    data = response.json()["data"]
     assert response.status_code == 200
     assert len(data) == expected_count
+
+
+@pytest.mark.parametrize(
+    "start_date,end_date,expected_count",
+    [("2024-01-01", "2024-12-31", 1), (None, "2024-12-31", 1), ("2025-01-01", None, 1)],
+)
+def test_get_transactions_search_by_date(
+    client: TestClient,
+    add_transaction,
+    add_another_transaction,
+    start_date,
+    end_date,
+    expected_count,
+):
+    url_query = generate_url_query({"start_date": start_date, "end_date": end_date})
+    response = client.get(f"/transactions/?{url_query}")
+    data = response.json()["data"]
+    assert response.status_code == 200
+    assert len(data) == expected_count
+
+
+def test_get_transactions_pagination(
+    client: TestClient, add_transaction, add_another_transaction
+):
+    response = client.get("/transactions/?page=1&size=1")
+    data = response.json()
+
+    assert response.status_code == 200
+    assert len(data["data"]) == 1
+    assert data["total_count"] == 2
+    assert data["links"]["next"] is not None
+    assert data["links"]["prev"] is None
+
+    # check next page
+    response = client.get(data["links"]["next"])
+    data = response.json()
+    assert len(data["data"]) == 1
+    assert data["total_count"] == 2
+    assert data["links"]["next"] is None
+    assert data["links"]["prev"] is not None
 
 
 def test_get_transaction(client: TestClient, add_transaction):

@@ -10,6 +10,7 @@ requires-python = ">=3.13"
 dependencies = [
     "alembic>=1.16.4",
     "fastapi[standard]>=0.116.1",
+    "httpx>=0.28.1",
     "nicegui>=2.21.1",
     "psycopg2-binary>=2.9.10",
     "python-decouple>=3.8",
@@ -31,7 +32,7 @@ lint = "uv tool run ruff check ."
 format = "uv tool run ruff format ."
 tc = "uv tool run ty check ."
 apirun = "uv run fastapi dev src/api/main.py"
-guirun = "run run python src/gui/main.py"
+guirun = "uv run python src/gui/main.py"
 
 [tool.poe.tasks.dummy]
 cmd = "uv run scripts/generate_dummy_data.py"

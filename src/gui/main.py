@@ -1,6 +1,7 @@
+from helpers import call_api
 from nicegui import ui
 
-API_BASE = "http://localhost:8000"
+# TODO resolve relative import error
 
 
 @ui.page("/")
@@ -10,16 +11,30 @@ def home():
 
 @ui.page("/categories")
 def categories_page():
+    data = call_api("/categories/", "GET")
+
     ui.label("Categories").classes("text-xl font-bold")
 
     with ui.column().classes("gap-2"):
         ui.table(
             columns=[
-                {"name": "id", "label": "ID"},
-                {"name": "name", "label": "Name"},
-                {"name": "budget", "label": "Budget"},
+                {
+                    "name": "id",
+                    "label": "ID",
+                    "field": "id",
+                },
+                {
+                    "name": "name",
+                    "label": "Name",
+                    "field": "name",
+                },
+                {
+                    "name": "budget",
+                    "label": "Budget",
+                    "field": "budget",
+                },
             ],
-            rows=[],
+            rows=data,
             row_key="id",
         ).classes("w-full")
 

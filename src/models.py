@@ -12,15 +12,15 @@ class MySQLModel(SQLModel):
     )
 
 
-field_money_dec_or_none = Field(max_digits=10, decimal_places=2, default=None)
-field_money_dec = Field(max_digits=10, decimal_places=2)
-field_str_1_25_or_none = Field(min_length=1, max_length=25, default=None)
-field_str_1_25 = Field(min_length=1, max_length=25)
+MoneyFieldOrNone = Field(max_digits=10, decimal_places=2, default=None)
+MoneyField = Field(max_digits=10, decimal_places=2)
+StringFieldOrNone = Field(min_length=1, max_length=25, default=None)
+StringField = Field(min_length=1, max_length=25)
 
 
 class CategoryBase(MySQLModel):
-    name: str = field_str_1_25
-    budget: Decimal | None = field_money_dec_or_none
+    name: str = StringField
+    budget: Decimal | None = MoneyFieldOrNone
 
     @field_validator("name", mode="before")
     @classmethod
@@ -41,7 +41,7 @@ class CategoryCreate(CategoryBase):
 
 
 class CategoryUpdate(CategoryBase):
-    name: str | None = field_str_1_25_or_none
+    name: str | None = StringFieldOrNone
 
 
 class CategoryRead(CategoryBase):
@@ -55,8 +55,8 @@ class CategoryReadNested(MySQLModel):
 
 class TransactionBase(MySQLModel):
     trans_date: date
-    amount: Decimal = field_money_dec
-    vendor: str = field_str_1_25
+    amount: Decimal = MoneyField
+    vendor: str = StringField
     note: str | None = Field(min_length=1, max_length=50, default=None)
 
 
@@ -82,8 +82,8 @@ class TransactionCreate(TransactionBase):
 
 class TransactionUpdate(TransactionBase):
     trans_date: datetime | None = None
-    amount: Decimal | None = field_money_dec_or_none
-    vendor: str | None = field_str_1_25_or_none
+    amount: Decimal | None = MoneyFieldOrNone
+    vendor: str | None = StringFieldOrNone
 
     category_id: int | None = None
 
@@ -97,3 +97,8 @@ class TransactionRead(TransactionBase):
 
 class DeleteResponse(BaseModel):
     detail: str
+
+
+class PaginationInput(BaseModel):
+    page: int = Field(default=1, ge=1)
+    size: int = Field(default=25, ge=1, le=50)

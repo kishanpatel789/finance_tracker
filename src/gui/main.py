@@ -1,7 +1,6 @@
-from helpers import call_api
 from nicegui import ui
 
-# TODO resolve relative import error
+from .helpers import call_api
 
 
 @ui.page("/")

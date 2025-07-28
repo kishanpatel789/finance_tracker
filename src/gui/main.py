@@ -9,9 +9,9 @@ def home():
     ui.label("Finance Tracker").classes("text-xl")
 
 
-@ui.page("/categories")
+@ui.page("/categories/")
 def categories_page():
-    data = call_api("/categories/", "GET")
+    data = call_api("/categories/", method="GET")
 
     ui.label("Categories").classes("text-xl font-bold")
 

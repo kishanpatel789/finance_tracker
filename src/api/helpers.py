@@ -25,7 +25,7 @@ def get_query_stats(
     query: SelectOfScalar, session: Session, pagination_input: PaginationInput
 ) -> tuple[int, int]:
     count_query = select(func.count(1).label("cnt")).select_from(query.subquery())
-    total_row_count = session.exec(count_query).one()
+    total_row_count = session.exec(count_query).one() or 0
 
     total_page_count = (
         total_row_count + pagination_input.size - 1

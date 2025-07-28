@@ -52,7 +52,7 @@ def generate_links(
     request: Request,
     query_map: dict,
 ) -> PageLinks:
-    base_url = str(request.url_for("read_transactions"))
+    base_url = request.url_for("read_transactions")
 
     current = f"{base_url}?{generate_url_query(query_map)}"
 

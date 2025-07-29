@@ -16,7 +16,7 @@ def call_api(
         case "POST":
             response = httpx.post(url, json=payload)
         case "PATCH":
-            response = httpx.put(url, json=payload)
+            response = httpx.patch(url, json=payload)
         case "DELETE":
             response = httpx.delete(url)
         case _:
@@ -32,3 +32,9 @@ def format_currency(amount: str | None) -> str:
     if amount is None:
         return "--"
     return f"${float(amount):,.2f}"
+
+
+def currency_str_to_float(amount: str | None) -> float:
+    if amount is None:
+        return 0.0
+    return float(amount.replace("$", "").replace(",", ""))

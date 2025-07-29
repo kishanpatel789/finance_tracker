@@ -1,6 +1,6 @@
 from nicegui import ui
 
-from ..helpers import call_api, format_currency
+from ..helpers import call_api, currency_str_to_float, format_currency
 from ..theme import theme
 
 
@@ -27,13 +27,39 @@ def create() -> None:
                                     "text-gray-600"
                                 )
                             with ui.row().classes("gap-2"):
-                                ui.button("Edit").classes(
-                                    "px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
-                                )
-                                ui.button("Delete").classes(
-                                    "px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600"
-                                )
+                                ui.button(
+                                    icon="edit",
+                                    on_click=lambda r=row: open_edit_modal(r),
+                                ).props("color=primary dense")
+                                ui.button(icon="delete").props("color=negative dense")
 
             ui.button("Add Category", on_click=lambda: ui.notify("TODO: Add category"))
+
+            def open_edit_modal(row):
+                with ui.dialog() as dialog, ui.card():
+                    ui.label("Edit Category").classes("text-lg font-semibold")
+
+                    name = ui.input("Name", value=row["name"]).classes("w-full")
+                    budget = ui.number(
+                        "Budget", value=currency_str_to_float(row["budget"])
+                    ).classes("w-full")
+
+                    with ui.row():
+                        ui.button("Cancel", on_click=dialog.close)
+                        ui.button(
+                            "Save",
+                            on_click=lambda: submit_edit(
+                                dialog, row["id"], name.value, budget.value
+                            ),
+                        )
+
+                    dialog.open()
+
+            def submit_edit(dialog, id, name, budget):
+                payload = {"name": name, "budget": budget}
+                call_api(f"/categories/{id}", payload=payload, method="PATCH")
+                dialog.close()
+                refresh()
+                ui.notify("Category updated")
 
             refresh()

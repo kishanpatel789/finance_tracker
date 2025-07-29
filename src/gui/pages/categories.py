@@ -31,7 +31,10 @@ def create() -> None:
                                     icon="edit",
                                     on_click=lambda r=row: open_edit_modal(r),
                                 ).props("color=primary dense")
-                                ui.button(icon="delete").props("color=negative dense")
+                                ui.button(
+                                    icon="delete",
+                                    on_click=lambda r=row: delete_category(r["id"]),
+                                ).props("color=negative dense")
 
             ui.button("Add Category", on_click=lambda: ui.notify("TODO: Add category"))
 
@@ -61,5 +64,10 @@ def create() -> None:
                 dialog.close()
                 refresh()
                 ui.notify("Category updated")
+
+            def delete_category(id):
+                call_api(f"/categories/{id}", method="DELETE")
+                refresh()
+                ui.notify("Category deleted")
 
             refresh()

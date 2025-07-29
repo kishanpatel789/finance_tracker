@@ -1,18 +1,9 @@
-import tomllib
-from pathlib import Path
-
 from fastapi import FastAPI
 
+from .helpers import parse_pyproject_toml
 from .routers import categories, transactions
 
-project_root = Path(__file__).parents[2]
-with open(project_root / "pyproject.toml", "rb") as f:
-    pyproject = tomllib.load(f)
-
-VERSION = pyproject["project"]["version"]
-AUTHOR_NAME = pyproject["project"]["authors"][0]["name"]
-AUTHOR_EMAIL = pyproject["project"]["authors"][0]["email"]
-
+project_info = parse_pyproject_toml()
 
 description = """
 This API supports the Finance Tracker application frontend.
@@ -48,11 +39,11 @@ app = FastAPI(
     title="Finance Tracker 💰",
     description=description,
     summary="Record transactions and audit your finances against a monthly budget.",
-    version=VERSION,
+    version=project_info.version,
     contact={
-        "name": AUTHOR_NAME,
+        "name": project_info.author_name,
         "url": "https://kishanpatel.dev",
-        "email": AUTHOR_EMAIL,
+        "email": project_info.author_email,
     },
     openapi_tags=tags_metadata,
 )

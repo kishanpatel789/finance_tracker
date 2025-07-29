@@ -1,3 +1,6 @@
+import tomllib
+from collections import namedtuple
+from pathlib import Path
 from urllib.parse import urlencode
 
 from fastapi import Request
@@ -6,6 +9,22 @@ from sqlmodel import Session, func, select
 from sqlmodel.sql.expression import SelectOfScalar
 
 from .models import PageBase, PageLinks, PaginationInput
+
+ProjectInfo = namedtuple("ProjectInfo", ["version", "author_name", "author_email"])
+
+
+def parse_pyproject_toml() -> ProjectInfo:
+    project_root = Path(__file__).parents[2]
+    with open(project_root / "pyproject.toml", "rb") as f:
+        pyproject = tomllib.load(f)
+
+    project_info = ProjectInfo(
+        version=pyproject["project"]["version"],
+        author_name=pyproject["project"]["authors"][0]["name"],
+        author_email=pyproject["project"]["authors"][0]["email"],
+    )
+
+    return project_info
 
 
 def generate_url_query(query_map: dict) -> str:

@@ -26,3 +26,9 @@ def call_api(
     response.raise_for_status()
 
     return response.json()
+
+
+def format_currency(amount: str | None) -> str:
+    if amount is None:
+        return "--"
+    return f"${float(amount):,.2f}"

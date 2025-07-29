@@ -8,17 +8,13 @@ def create() -> None:
     @ui.page("/categories/")
     def categories_page():
         with theme.frame():
-            ui.label("Categories").classes("text-xl font-bold")
-            ui.button("Add Category", on_click=lambda: open_create_modal())
 
-            container = ui.column().classes("space-y-1 w-full items-center")
-
-            def refresh():
-                container.clear()
+            @ui.refreshable
+            def categories_div():
                 data = call_api("/categories/", method="GET")
 
                 for row in data:
-                    with container:
+                    with ui.column().classes("space-y-1 w-full items-center"):
                         with ui.row().classes(
                             "w-96 justify-between items-center bg-white rounded-lg shadow-sm p-4"
                         ):
@@ -36,8 +32,6 @@ def create() -> None:
                                     icon="delete",
                                     on_click=lambda r=row: delete_category(r["id"]),
                                 ).props("color=negative dense")
-
-            ui.button("Add Category", on_click=lambda: ui.notify("TODO: Add category"))
 
             def open_create_modal():
                 with ui.dialog() as dialog, ui.card():
@@ -61,7 +55,7 @@ def create() -> None:
                 payload = {"name": name, "budget": budget}
                 call_api("/categories/", payload=payload, method="POST")
                 dialog.close()
-                refresh()
+                categories_div.refresh()
                 ui.notify("Category created")
 
             def open_edit_modal(row):
@@ -88,12 +82,15 @@ def create() -> None:
                 payload = {"name": name, "budget": budget}
                 call_api(f"/categories/{id}", payload=payload, method="PATCH")
                 dialog.close()
-                refresh()
+                categories_div.refresh()
                 ui.notify("Category updated")
 
             def delete_category(id):
                 call_api(f"/categories/{id}", method="DELETE")
-                refresh()
+                categories_div.refresh()
                 ui.notify("Category deleted")
 
-            refresh()
+            # render content
+            ui.label("Categories").classes("text-xl font-bold")
+            ui.button("Add Category", on_click=lambda: open_create_modal())
+            categories_div()

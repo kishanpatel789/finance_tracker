@@ -32,7 +32,7 @@ lint = "uv tool run ruff check ."
 format = "uv tool run ruff format ."
 tc = "uv tool run ty check ."
 apirun = "uv run fastapi dev src/api/main.py"
-guirun = "uv run python src/gui/main.py"
+guirun = "uv run python -m src.gui.main"
 
 [tool.poe.tasks.dummy]
 cmd = "uv run scripts/generate_dummy_data.py"

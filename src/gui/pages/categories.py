@@ -9,6 +9,7 @@ def create() -> None:
     def categories_page():
         with theme.frame():
             ui.label("Categories").classes("text-xl font-bold")
+            ui.button("Add Category", on_click=lambda: open_create_modal())
 
             container = ui.column().classes("space-y-1 w-full items-center")
 
@@ -37,6 +38,31 @@ def create() -> None:
                                 ).props("color=negative dense")
 
             ui.button("Add Category", on_click=lambda: ui.notify("TODO: Add category"))
+
+            def open_create_modal():
+                with ui.dialog() as dialog, ui.card():
+                    ui.label("Create Category").classes("text-lg font-semibold")
+
+                    name = ui.input("Name").classes("w-full")
+                    budget = ui.number("Budget").classes("w-full")
+
+                    with ui.row():
+                        ui.button("Cancel", on_click=dialog.close)
+                        ui.button(
+                            "Save",
+                            on_click=lambda: submit_create(
+                                dialog, name.value, budget.value
+                            ),
+                        )
+
+                    dialog.open()
+
+            def submit_create(dialog, name, budget):
+                payload = {"name": name, "budget": budget}
+                call_api("/categories/", payload=payload, method="POST")
+                dialog.close()
+                refresh()
+                ui.notify("Category created")
 
             def open_edit_modal(row):
                 with ui.dialog() as dialog, ui.card():

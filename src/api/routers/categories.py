@@ -47,7 +47,7 @@ def create_category(category: CategoryCreate, session: SessionDep):
 
 @router.get("/", response_model=list[CategoryRead])
 def read_categories(session: SessionDep):
-    categories = session.exec(select(Category)).all()
+    categories = session.exec(select(Category).order_by(Category.name)).all()
     return categories
 
 

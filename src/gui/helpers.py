@@ -38,3 +38,11 @@ def currency_str_to_float(amount: str | None) -> float:
     if amount is None:
         return 0.0
     return float(amount)
+
+
+def get_selectable_categories() -> dict[str, str]:
+    """Fetches categories from the API and returns them in a format suitable for a select input."""
+    response = call_api("/categories/", method="GET")
+    options = {"__NONE__": "-- No Category --"}
+    options.update({category["id"]: category["name"] for category in response})
+    return options

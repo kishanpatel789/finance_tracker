@@ -210,3 +210,4 @@ __marimo__/
 *.swo
 tmux_start.sh
 *.sqlite
+*.db

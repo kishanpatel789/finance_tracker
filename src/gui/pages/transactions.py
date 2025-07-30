@@ -16,7 +16,11 @@ def create() -> None:
 
             @ui.refreshable
             def transactions_div():
-                response = call_api("/transactions/", method="GET")
+                result = call_api("/transactions/", method="GET")
+
+                if result.data is None:
+                    ui.label("No transactions found").classes("text-gray-500")
+                    return
 
                 grid_classes = (
                     "grid grid-cols-6 gap-4 w-full justify-between items-center px-4"
@@ -32,7 +36,7 @@ def create() -> None:
                         ui.label("Amount").classes("col-span-1 text-right mr-2")
 
                     # data rows
-                    for row in response["data"]:
+                    for row in result.data["data"]:
                         with ui.row().classes(
                             f"{grid_classes} bg-white rounded-lg shadow-sm"
                         ):
@@ -62,6 +66,7 @@ def create() -> None:
 
                     with ui.row():
                         with ui.column():
+                            # date selector
                             with ui.input("Date", value=row["trans_date"]) as date:
                                 with ui.menu().props("no-parent-event") as menu:
                                     with ui.date().bind_value(date):
@@ -84,6 +89,8 @@ def create() -> None:
                             note = ui.textarea("Note", value=row["note"]).classes(
                                 "w-full"
                             )
+
+                            # category drop-down selector
                             current_category_id = (
                                 row["category"]["id"] if row["category"] else None
                             )
@@ -113,15 +120,19 @@ def create() -> None:
             def submit_edit(dialog, id, **payload):
                 if "category_id" in payload and payload["category_id"] == "__NONE__":
                     payload["category_id"] = None
-                call_api(f"/transactions/{id}", payload=payload, method="PATCH")
-                dialog.close()
-                transactions_div.refresh()
-                ui.notify("Transaction updated")
+                result = call_api(
+                    f"/transactions/{id}", payload=payload, method="PATCH"
+                )
+                if result.success:
+                    dialog.close()
+                    transactions_div.refresh()
+                    ui.notify("Transaction updated")
 
             def delete_transaction(id):
-                call_api(f"/transactions/{id}", method="DELETE")
-                transactions_div.refresh()
-                ui.notify("Transaction deleted")
+                result = call_api(f"/transactions/{id}", method="DELETE")
+                if result.success:
+                    transactions_div.refresh()
+                    ui.notify("Transaction deleted")
 
             # render content
             ui.label("Transactions").classes("text-xl font-bold")

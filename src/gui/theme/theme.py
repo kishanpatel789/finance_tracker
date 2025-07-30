@@ -6,6 +6,8 @@ from nicegui import ui
 @contextmanager
 def frame():
     """Custom page frame to share the same styling and behavior across all pages"""
+
+    # page header
     with ui.header().classes("items-center justify-between"):
         ui.label("Finance Tracker").classes("font-bold text-3xl")
 

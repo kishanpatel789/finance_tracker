@@ -11,9 +11,13 @@ def create() -> None:
 
             @ui.refreshable
             def categories_div():
-                data = call_api("/categories/", method="GET")
+                result = call_api("/categories/", method="GET")
 
-                for row in data:
+                if result.data is None:
+                    ui.label("No categories found").classes("text-gray-500")
+                    return
+
+                for row in result.data:
                     with ui.column().classes("space-y-1 w-full items-center"):
                         with ui.row().classes(
                             "w-96 justify-between items-center bg-white rounded-lg shadow-sm p-4"
@@ -53,10 +57,11 @@ def create() -> None:
 
             def submit_create(dialog, name, budget):
                 payload = {"name": name, "budget": budget}
-                call_api("/categories/", payload=payload, method="POST")
-                dialog.close()
-                categories_div.refresh()
-                ui.notify("Category created")
+                result = call_api("/categories/", payload=payload, method="POST")
+                if result.success:
+                    dialog.close()
+                    categories_div.refresh()
+                    ui.notify("Category created")
 
             def open_edit_modal(row):
                 with ui.dialog() as dialog, ui.card():
@@ -80,15 +85,17 @@ def create() -> None:
 
             def submit_edit(dialog, id, name, budget):
                 payload = {"name": name, "budget": budget}
-                call_api(f"/categories/{id}", payload=payload, method="PATCH")
-                dialog.close()
-                categories_div.refresh()
-                ui.notify("Category updated")
+                result = call_api(f"/categories/{id}", payload=payload, method="PATCH")
+                if result.success:
+                    dialog.close()
+                    categories_div.refresh()
+                    ui.notify("Category updated")
 
             def delete_category(id):
-                call_api(f"/categories/{id}", method="DELETE")
-                categories_div.refresh()
-                ui.notify("Category deleted")
+                result = call_api(f"/categories/{id}", method="DELETE")
+                if result.success:
+                    categories_div.refresh()
+                    ui.notify("Category deleted")
 
             # render content
             ui.label("Categories").classes("text-xl font-bold")

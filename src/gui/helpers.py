@@ -37,4 +37,4 @@ def format_currency(amount: str | None) -> str:
 def currency_str_to_float(amount: str | None) -> float:
     if amount is None:
         return 0.0
-    return float(amount.replace("$", "").replace(",", ""))
+    return float(amount)

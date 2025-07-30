@@ -12,6 +12,7 @@ def frame():
         with ui.button(icon="menu"):
             with ui.menu():
                 ui.menu_item("Home", lambda: ui.navigate.to("/"))
+                ui.menu_item("Transactions", lambda: ui.navigate.to("/transactions/"))
                 ui.menu_item("Categories", lambda: ui.navigate.to("/categories/"))
 
     # page content goes here

@@ -61,44 +61,41 @@ def create() -> None:
                                 ).props("color=negative dense")
 
             def open_edit_modal(row):
-                with ui.dialog() as dialog, ui.card():
+                with ui.dialog() as dialog, ui.card().classes("w-[700px]"):
                     ui.label("Edit Transaction").classes("text-lg font-semibold")
 
+                    with ui.row().classes("gap-4"):
+                        # date selector
+                        with ui.input("Date", value=row["trans_date"]) as date:
+                            with ui.menu().props("no-parent-event") as menu:
+                                with ui.date().bind_value(date):
+                                    with ui.row().classes("justify-end"):
+                                        ui.button("Close", on_click=menu.close).props(
+                                            "flat"
+                                        )
+                            with date.add_slot("append"):
+                                ui.icon("edit_calendar").on("click", menu.open).classes(
+                                    "cursor-pointer"
+                                )
+
+                        amount = ui.number(
+                            "Amount", value=currency_str_to_float(row["amount"])
+                        ).classes("w-full")
+                    with ui.row().classes("gap-4"):
+                        vendor = ui.input("Vendor", value=row["vendor"]).classes(
+                            "w-full"
+                        )
+                        # category drop-down selector
+                        current_category_id = (
+                            row["category"]["id"] if row["category"] else None
+                        )
+                        category_id = ui.select(
+                            options=get_selectable_categories(),
+                            value=current_category_id,
+                            with_input=True,
+                        ).classes("w-full")
                     with ui.row():
-                        with ui.column():
-                            # date selector
-                            with ui.input("Date", value=row["trans_date"]) as date:
-                                with ui.menu().props("no-parent-event") as menu:
-                                    with ui.date().bind_value(date):
-                                        with ui.row().classes("justify-end"):
-                                            ui.button(
-                                                "Close", on_click=menu.close
-                                            ).props("flat")
-                                with date.add_slot("append"):
-                                    ui.icon("edit_calendar").on(
-                                        "click", menu.open
-                                    ).classes("cursor-pointer")
-
-                            vendor = ui.input("Vendor", value=row["vendor"]).classes(
-                                "w-full"
-                            )
-                            amount = ui.number(
-                                "Amount", value=currency_str_to_float(row["amount"])
-                            ).classes("w-full")
-                        with ui.column():
-                            note = ui.textarea("Note", value=row["note"]).classes(
-                                "w-full"
-                            )
-
-                            # category drop-down selector
-                            current_category_id = (
-                                row["category"]["id"] if row["category"] else None
-                            )
-                            category_id = ui.select(
-                                options=get_selectable_categories(),
-                                value=current_category_id,
-                                with_input=True,
-                            ).classes("w-40")
+                        note = ui.textarea("Note", value=row["note"]).classes("w-full")
 
                     with ui.row():
                         ui.button("Cancel", on_click=dialog.close)

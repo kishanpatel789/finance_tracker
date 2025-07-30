@@ -3,7 +3,7 @@ from datetime import date
 import pytest
 from sqlmodel import Session, create_engine
 
-from src.models import Category, SQLModel, Transaction
+from src.api.models import Category, SQLModel, Transaction
 
 
 @pytest.fixture(scope="function")
@@ -62,4 +62,5 @@ def test_create_transaction(session):
     assert transaction.note == "Handsoap"
     assert transaction.created_at is not None
     assert transaction.category_id is not None
+    assert transaction.category is not None
     assert transaction.category.name == "General"

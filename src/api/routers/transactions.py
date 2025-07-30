@@ -2,15 +2,19 @@ import re
 from datetime import datetime, timezone
 from typing import Annotated
 
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlmodel import or_, select
 
-from ..dependencies import PaginationDep, SessionDep
+from ..dependencies import SessionDep
+from ..helpers import create_page
 from ..models import (
     Category,
     DeleteResponse,
+    PaginationInput,
     Transaction,
     TransactionCreate,
+    TransactionPage,
+    TransactionQueryParams,
     TransactionRead,
     TransactionUpdate,
 )
@@ -38,18 +42,21 @@ def create_transaction(transaction: TransactionCreate, session: SessionDep):
     return db_transaction
 
 
-@router.get("/", response_model=list[TransactionRead])
+@router.get("/", response_model=TransactionPage)
 def read_transactions(
+    request: Request,
     session: SessionDep,
-    pagination_input: PaginationDep,
-    q: Annotated[str | None, Query(max_length=40)] = None,
+    pagination_input: Annotated[PaginationInput, Depends()],
+    query_params: Annotated[TransactionQueryParams, Depends()],
 ):
-    query = select(Transaction)
+    query_map: dict = query_params.model_dump()
 
     # search filter
-    if q is not None:
-        q = q.strip().lower()
+    query = select(Transaction)
+    if query_params.q is not None:
+        q = query_params.q.strip().lower()
         q = re.sub(r"\s+", " ", q)
+        query_map.update({"q": q})
         search_term = f"%{q}%"
         query = query.where(
             or_(
@@ -60,22 +67,21 @@ def read_transactions(
         )
 
     # date range filter
-    # TODO
+    if query_params.start_date is not None:
+        query = query.where(Transaction.trans_date >= query_params.start_date)
+    if query_params.end_date is not None:
+        query = query.where(Transaction.trans_date <= query_params.end_date)
 
-    # pagination
-    offset = (pagination_input.page - 1) * pagination_input.size
-    query = (
-        query.order_by(
-            Transaction.trans_date.desc(),
-            Transaction.vendor.desc(),
-            Transaction.amount.desc(),
-        )
-        .offset(offset)
-        .limit(pagination_input.size)
+    # sort
+    query = query.order_by(
+        Transaction.trans_date.desc(),
+        Transaction.vendor.desc(),
+        Transaction.amount.desc(),
     )
-    transactions = session.exec(query).all()
 
-    return transactions
+    page_output = create_page(query, query_map, pagination_input, session, request)
+
+    return page_output
 
 
 @router.get("/{transaction_id}", response_model=TransactionRead)

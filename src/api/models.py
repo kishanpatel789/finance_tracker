@@ -1,9 +1,34 @@
 import re
 from datetime import date, datetime, timezone
 from decimal import Decimal
+from typing import Annotated
 
-from pydantic import BaseModel, ConfigDict, field_validator
+from fastapi import Query
+from pydantic import BaseModel, ConfigDict, HttpUrl, field_validator
 from sqlmodel import Field, Relationship, SQLModel
+
+
+class PaginationInput(BaseModel):
+    page: int = Field(default=1, ge=1)
+    size: int = Field(default=25, ge=1, le=50)
+
+
+class TransactionQueryParams(BaseModel):
+    q: Annotated[str | None, Query(max_length=40)] = None
+    start_date: date | None = None
+    end_date: date | None = None
+
+
+class PageLinks(BaseModel):
+    current: HttpUrl
+    prev: HttpUrl | None = None
+    next: HttpUrl | None = None
+
+
+class PageBase(BaseModel):
+    data: list
+    total_count: int
+    links: PageLinks
 
 
 class MySQLModel(SQLModel):
@@ -42,6 +67,13 @@ class CategoryCreate(CategoryBase):
 
 class CategoryUpdate(CategoryBase):
     name: str | None = StringFieldOrNone
+
+    @field_validator("name", mode="before")
+    @classmethod
+    def reject_null_name(cls, value: str | None) -> str:
+        if value is None:
+            raise ValueError("Field 'name' cannot be null")
+        return value
 
 
 class CategoryRead(CategoryBase):
@@ -95,10 +127,9 @@ class TransactionRead(TransactionBase):
     category: CategoryReadNested | None = None
 
 
+class TransactionPage(PageBase):
+    data: list[TransactionRead]
+
+
 class DeleteResponse(BaseModel):
     detail: str
-
-
-class PaginationInput(BaseModel):
-    page: int = Field(default=1, ge=1)
-    size: int = Field(default=25, ge=1, le=50)

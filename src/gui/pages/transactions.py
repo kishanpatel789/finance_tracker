@@ -18,7 +18,7 @@ def create() -> None:
             def transactions_div():
                 result = call_api("/transactions/", method="GET")
 
-                if result.data is None:
+                if not result.success:
                     ui.label("No transactions found").classes("text-gray-500")
                     return
 

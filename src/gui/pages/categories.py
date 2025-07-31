@@ -13,7 +13,7 @@ def create() -> None:
             def categories_div():
                 result = call_api("/categories/", method="GET")
 
-                if result.data is None:
+                if not result.success:
                     ui.label("No categories found").classes("text-gray-500")
                     return
 

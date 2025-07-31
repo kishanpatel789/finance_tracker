@@ -6,7 +6,7 @@ from decouple import config
 from faker import Faker
 from sqlmodel import Session, create_engine
 
-from src.models import Category, SQLModel, Transaction
+from src.api.models import Category, SQLModel, Transaction
 
 fake = Faker()
 random.seed(42)

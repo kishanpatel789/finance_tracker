@@ -16,7 +16,7 @@ def create() -> None:
     def transactions_page():
         with theme.frame():
 
-            def search_div():
+            def search_div(initial_start_date: str = "", initial_end_date: str = ""):
                 with ui.row().classes("items-center"):
                     search_query = ui.input(label="Search Term").on(
                         "keydown.enter",
@@ -27,7 +27,7 @@ def create() -> None:
                         ),
                     )
 
-                    with ui.input("From Date") as start_date:
+                    with ui.input("From Date", value=initial_start_date) as start_date:
                         with ui.menu().props("no-parent-event") as menu:
                             with ui.date().bind_value(start_date):
                                 with ui.row().classes("justify-end"):
@@ -39,7 +39,7 @@ def create() -> None:
                                 "cursor-pointer"
                             )
 
-                    with ui.input("To Date") as end_date:
+                    with ui.input("To Date", value=initial_end_date) as end_date:
                         with ui.menu().props("no-parent-event") as menu:
                             with ui.date().bind_value(end_date):
                                 with ui.row().classes("justify-end"):
@@ -67,7 +67,7 @@ def create() -> None:
                 transactions_div.refresh(params=params)
 
             @ui.refreshable
-            def transactions_div(params: dict = {}):
+            def transactions_div(*, params: dict = {}):
                 result = call_api("/transactions/", payload=params, method="GET")
 
                 if not result.success:
@@ -256,8 +256,18 @@ def create() -> None:
                 params["page"] = page
                 transactions_div.refresh(params=params)
 
+            # set initial state
+            initial_start_date: str = (
+                datetime.date.today() - datetime.timedelta(days=60)
+            ).isoformat()
+            initial_end_date: str = datetime.date.today().isoformat()
+            params: dict[str, str] = {
+                "start_date": initial_start_date,
+                "end_date": initial_end_date,
+            }
+
             # render content
             ui.label("Transactions").classes("text-xl font-bold")
             ui.button("Add Transaction", on_click=open_create_modal)
-            search_div()
-            transactions_div()
+            search_div(initial_start_date, initial_end_date)
+            transactions_div(params=params)

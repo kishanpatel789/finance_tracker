@@ -226,7 +226,8 @@ def test_get_transactions_pagination(
 
     assert response.status_code == 200
     assert len(data["data"]) == 1
-    assert data["total_count"] == 2
+    assert data["total_row_count"] == 2
+    assert data["total_page_count"] == 2
     assert data["links"]["next"] is not None
     assert data["links"]["prev"] is None
 
@@ -234,7 +235,8 @@ def test_get_transactions_pagination(
     response = client.get(data["links"]["next"])
     data = response.json()
     assert len(data["data"]) == 1
-    assert data["total_count"] == 2
+    assert data["total_row_count"] == 2
+    assert data["total_page_count"] == 2
     assert data["links"]["next"] is None
     assert data["links"]["prev"] is not None
 

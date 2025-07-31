@@ -62,6 +62,7 @@ def create() -> None:
 
             def submit_search(**kwargs):
                 params = {key: value for key, value in kwargs.items() if value != ""}
+                params["page"] = 1  # reset to first page on search
 
                 transactions_div.refresh(params=params)
 
@@ -72,6 +73,17 @@ def create() -> None:
                 if not result.success:
                     ui.label("No transactions found").classes("text-gray-500")
                     return
+
+                # pagination controls
+                total_page_count = result.data["total_page_count"]
+                with ui.row():
+                    ui.pagination(
+                        min=1,
+                        max=total_page_count,
+                        value=params.get("page", 1),
+                        direction_links=True,
+                        on_change=lambda page: update_page(page.value, params),
+                    )
 
                 grid_classes = (
                     "grid grid-cols-6 gap-4 w-full justify-between items-center px-4"
@@ -239,6 +251,10 @@ def create() -> None:
                 if result.success:
                     transactions_div.refresh()
                     ui.notify("Transaction deleted")
+
+            def update_page(page, params):
+                params["page"] = page
+                transactions_div.refresh(params=params)
 
             # render content
             ui.label("Transactions").classes("text-xl font-bold")

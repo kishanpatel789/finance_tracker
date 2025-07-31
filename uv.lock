@@ -295,6 +295,7 @@ dependencies = [
     { name = "fastapi", extra = ["standard"] },
     { name = "httpx" },
     { name = "nicegui" },
+    { name = "plotly" },
     { name = "psycopg2-binary" },
     { name = "python-decouple" },
     { name = "sqlmodel" },
@@ -314,6 +315,7 @@ requires-dist = [
     { name = "fastapi", extras = ["standard"], specifier = ">=0.116.1" },
     { name = "httpx", specifier = ">=0.28.1" },
     { name = "nicegui", specifier = ">=2.21.1" },
+    { name = "plotly", specifier = ">=6.2.0" },
     { name = "psycopg2-binary", specifier = ">=2.9.10" },
     { name = "python-decouple", specifier = ">=3.8" },
     { name = "sqlmodel", specifier = ">=0.0.24" },
@@ -610,6 +612,15 @@ wheels = [
 ]
 
 [[package]]
+name = "narwhals"
+version = "2.0.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/e2/8f/51d14e402c4f9d281a2e153a6a805cad5460088027a999faf264b54e7641/narwhals-2.0.1.tar.gz", hash = "sha256:235e61ca807bc21110ca36a4d53888ecc22c42dcdf50a7c886e10dde3fd7f38c", size = 525541, upload_time = "2025-07-29T08:39:04.81Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/7f/26/43caf834e47c63883a5eddc02893b7fdbe6a0a4508ff6dc401907f3cc085/narwhals-2.0.1-py3-none-any.whl", hash = "sha256:837457e36a2ba1710c881fb69e1f79ce44fb81728c92ac378f70892a53af8ddb", size = 385436, upload_time = "2025-07-29T08:39:03.163Z" },
+]
+
+[[package]]
 name = "nicegui"
 version = "2.21.1"
 source = { registry = "https://pypi.org/simple" }
@@ -691,6 +702,19 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/76/f1/4594f5e0fcddb6953e5b8fe00da8c317b8b41b547e2b3ae2da7512943c62/pastel-0.2.1.tar.gz", hash = "sha256:e6581ac04e973cac858828c6202c1e1e81fee1dc7de7683f3e1ffe0bfd8a573d", size = 7555, upload_time = "2020-09-16T19:21:12.43Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/aa/18/a8444036c6dd65ba3624c63b734d3ba95ba63ace513078e1580590075d21/pastel-0.2.1-py2.py3-none-any.whl", hash = "sha256:4349225fcdf6c2bb34d483e523475de5bb04a5c10ef711263452cb37d7dd4364", size = 5955, upload_time = "2020-09-16T19:21:11.409Z" },
+]
+
+[[package]]
+name = "plotly"
+version = "6.2.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "narwhals" },
+    { name = "packaging" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/6e/5c/0efc297df362b88b74957a230af61cd6929f531f72f48063e8408702ffba/plotly-6.2.0.tar.gz", hash = "sha256:9dfa23c328000f16c928beb68927444c1ab9eae837d1fe648dbcda5360c7953d", size = 6801941, upload_time = "2025-06-26T16:20:45.765Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ed/20/f2b7ac96a91cc5f70d81320adad24cc41bf52013508d649b1481db225780/plotly-6.2.0-py3-none-any.whl", hash = "sha256:32c444d4c940887219cb80738317040363deefdfee4f354498cc0b6dab8978bd", size = 9635469, upload_time = "2025-06-26T16:20:40.76Z" },
 ]
 
 [[package]]

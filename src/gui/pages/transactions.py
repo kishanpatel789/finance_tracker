@@ -16,9 +16,58 @@ def create() -> None:
     def transactions_page():
         with theme.frame():
 
+            def search_div():
+                with ui.row().classes("items-center"):
+                    search_query = ui.input(label="Search Term").on(
+                        "keydown.enter",
+                        lambda: submit_search(
+                            q=search_query.value,
+                            start_date=start_date.value,
+                            end_date=end_date.value,
+                        ),
+                    )
+
+                    with ui.input("From Date") as start_date:
+                        with ui.menu().props("no-parent-event") as menu:
+                            with ui.date().bind_value(start_date):
+                                with ui.row().classes("justify-end"):
+                                    ui.button("Close", on_click=menu.close).props(
+                                        "flat"
+                                    )
+                        with start_date.add_slot("append"):
+                            ui.icon("edit_calendar").on("click", menu.open).classes(
+                                "cursor-pointer"
+                            )
+
+                    with ui.input("To Date") as end_date:
+                        with ui.menu().props("no-parent-event") as menu:
+                            with ui.date().bind_value(end_date):
+                                with ui.row().classes("justify-end"):
+                                    ui.button("Close", on_click=menu.close).props(
+                                        "flat"
+                                    )
+                        with end_date.add_slot("append"):
+                            ui.icon("edit_calendar").on("click", menu.open).classes(
+                                "cursor-pointer"
+                            )
+
+                    ui.button(
+                        "Search",
+                        on_click=lambda: submit_search(
+                            q=search_query.value,
+                            start_date=start_date.value,
+                            end_date=end_date.value,
+                        ),
+                    )
+
+            def submit_search(**kwargs):
+                params = {key: value for key, value in kwargs.items() if value != ""}
+
+                transactions_div.refresh(params=params)
+
             @ui.refreshable
-            def transactions_div():
-                result = call_api("/transactions/", method="GET")
+            def transactions_div(params: dict = {}):
+                result = call_api("/transactions/", payload=params, method="GET")
 
                 if not result.success:
                     ui.label("No transactions found").classes("text-gray-500")
@@ -194,4 +243,5 @@ def create() -> None:
             # render content
             ui.label("Transactions").classes("text-xl font-bold")
             ui.button("Add Transaction", on_click=open_create_modal)
+            search_div()
             transactions_div()

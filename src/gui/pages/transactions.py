@@ -1,3 +1,5 @@
+import datetime
+
 from nicegui import ui
 
 from ..helpers import (
@@ -60,6 +62,63 @@ def create() -> None:
                                     on_click=lambda r=row: delete_transaction(r["id"]),
                                 ).props("color=negative dense")
 
+            def open_create_modal():
+                with ui.dialog() as dialog, ui.card().classes("w-[700px]"):
+                    ui.label("Add Transaction").classes("text-lg font-semibold")
+
+                    with ui.row().classes("gap-4"):
+                        # date selector
+                        with ui.input(
+                            "Date", value=datetime.date.today().isoformat()
+                        ) as date:
+                            with ui.menu().props("no-parent-event") as menu:
+                                with ui.date().bind_value(date):
+                                    with ui.row().classes("justify-end"):
+                                        ui.button("Close", on_click=menu.close).props(
+                                            "flat"
+                                        )
+                            with date.add_slot("append"):
+                                ui.icon("edit_calendar").on("click", menu.open).classes(
+                                    "cursor-pointer"
+                                )
+
+                        amount = ui.number("Amount").classes("w-full")
+                    with ui.row().classes("gap-4"):
+                        vendor = ui.input("Vendor").classes("w-full")
+                        # category drop-down selector
+                        category_id = ui.select(
+                            label="Category",
+                            options=get_selectable_categories(),
+                            with_input=True,
+                        ).classes("w-full")
+                    with ui.row():
+                        note = ui.textarea("Note").classes("w-full")
+
+                    with ui.row():
+                        ui.button("Cancel", on_click=dialog.close)
+                        ui.button(
+                            "Save",
+                            on_click=lambda: submit_create(
+                                dialog,
+                                vendor=vendor.value,
+                                trans_date=date.value,
+                                note=note.value,
+                                amount=amount.value,
+                                category_id=category_id.value,
+                            ),
+                        )
+
+                    dialog.open()
+
+            def submit_create(dialog, **payload):
+                if "category_id" in payload and payload["category_id"] == "__NONE__":
+                    payload["category_id"] = None
+                result = call_api("/transactions/", payload=payload, method="POST")
+                if result.success:
+                    dialog.close()
+                    transactions_div.refresh()
+                    ui.notify("Transaction created")
+
             def open_edit_modal(row):
                 with ui.dialog() as dialog, ui.card().classes("w-[700px]"):
                     ui.label("Edit Transaction").classes("text-lg font-semibold")
@@ -91,6 +150,7 @@ def create() -> None:
                         )
                         category_id = ui.select(
                             options=get_selectable_categories(),
+                            label="Category",
                             value=current_category_id,
                             with_input=True,
                         ).classes("w-full")
@@ -133,5 +193,5 @@ def create() -> None:
 
             # render content
             ui.label("Transactions").classes("text-xl font-bold")
-            ui.button("Add Transaction")
+            ui.button("Add Transaction", on_click=open_create_modal)
             transactions_div()

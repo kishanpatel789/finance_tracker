@@ -67,7 +67,7 @@ def create() -> None:
                 transactions_div.refresh(params=params)
 
             @ui.refreshable
-            def transactions_div(*, params: dict = None):
+            def transactions_div(*, params: dict | None = None):
                 if params is None:
                     params = {}
                 result = call_api("/transactions/", payload=params, method="GET")

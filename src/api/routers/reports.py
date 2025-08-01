@@ -1,7 +1,7 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Query
-from sqlmodel import case, func, outerjoin, select
+from sqlmodel import case, func, nulls_last, outerjoin, select
 
 from ..dependencies import SessionDep
 from ..helpers import get_month_range
@@ -46,7 +46,7 @@ def get_monthly_report(
             cat.budget,
         )
         .select_from(outerjoin(cat, subq, cat.id == subq.c.category_id, full=True))
-        .order_by(case((cat.budget.is_(None), 1), else_=0), cat.name)
+        .order_by(case((cat.budget.is_(None), 1), else_=0), nulls_last(cat.name))
     )
 
     data = session.exec(query).all()

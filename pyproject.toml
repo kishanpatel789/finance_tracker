@@ -12,6 +12,7 @@ dependencies = [
     "fastapi[standard]>=0.116.1",
     "httpx>=0.28.1",
     "nicegui>=2.21.1",
+    "plotly>=6.2.0",
     "psycopg2-binary>=2.9.10",
     "python-decouple>=3.8",
     "sqlmodel>=0.0.24",

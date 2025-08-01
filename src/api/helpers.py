@@ -124,7 +124,8 @@ def create_page(
 
     page_output = PageBase(
         data=data,
-        total_count=total_row_count,
+        total_row_count=total_row_count,
+        total_page_count=total_page_count,
         links=links,
     )
 

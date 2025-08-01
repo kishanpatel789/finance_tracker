@@ -27,7 +27,8 @@ class PageLinks(BaseModel):
 
 class PageBase(BaseModel):
     data: list
-    total_count: int
+    total_row_count: int
+    total_page_count: int
     links: PageLinks
 
 

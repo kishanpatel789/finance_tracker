@@ -134,3 +134,10 @@ class TransactionPage(PageBase):
 
 class DeleteResponse(BaseModel):
     detail: str
+
+
+class MonthlySummary(BaseModel):
+    category_id: int | None
+    category_name: str | None
+    amount_spent: Decimal = MoneyField
+    budget: Decimal | None = MoneyFieldOrNone

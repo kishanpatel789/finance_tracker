@@ -1,5 +1,6 @@
 import tomllib
 from collections import namedtuple
+from datetime import date, timedelta
 from pathlib import Path
 from urllib.parse import urlencode
 
@@ -130,3 +131,21 @@ def create_page(
     )
 
     return page_output
+
+
+def get_month_range(year_month: str) -> tuple[date, date]:
+    """
+    Parse month in `YYYY-MM` format.
+    Return two dates for first day and last day of month.
+    """
+    year, month = map(int, year_month.split("-"))
+
+    start_date = date(year, month, 1)
+
+    if month == 12:
+        end_date_plus_one = date(year + 1, 1, 1)
+    else:
+        end_date_plus_one = date(year, month + 1, 1)
+    end_date = end_date_plus_one - timedelta(days=1)
+
+    return start_date, end_date

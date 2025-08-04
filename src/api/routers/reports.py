@@ -1,10 +1,11 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Query
+from pydantic import AfterValidator
 from sqlmodel import case, func, nulls_last, outerjoin, select
 
 from ..dependencies import SessionDep
-from ..helpers import get_month_range
+from ..helpers import get_month_range, validate_year_month
 from ..models import (
     Category,
     MonthlySummary,
@@ -16,11 +17,13 @@ router = APIRouter(
     tags=["reports"],
 )
 
+YearMonthParam = Annotated[
+    str, Query(pattern=r"\d{4}-\d{2}"), AfterValidator(validate_year_month)
+]
+
 
 @router.get("/monthly_budget", response_model=list[MonthlySummary])
-def get_monthly_report(
-    year_month: Annotated[str, Query(pattern=r"\d{4}-\d{2}")], session: SessionDep
-):
+def get_monthly_report(year_month: YearMonthParam, session: SessionDep):
     month_range = get_month_range(year_month)
 
     # subquery to aggregate transactions

@@ -135,6 +135,16 @@ def create_page(
     return page_output
 
 
+def validate_year_month(year_month: str) -> str:
+    year, month = map(int, year_month.split("-"))
+    if year > date.today().year:
+        raise ValueError("Input year cannot exceed current year.")
+    if not (1 <= month <= 12):
+        raise ValueError("Input month must be between '01' and '12'.")
+
+    return year_month
+
+
 def get_month_range(year_month: str) -> DateRange:
     """
     Parse month in `YYYY-MM` format.

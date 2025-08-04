@@ -38,15 +38,15 @@ class MySQLModel(SQLModel):
     )
 
 
-MoneyFieldOrNone = Field(max_digits=10, decimal_places=2, default=None)
+OptionalMoneyField = Field(max_digits=10, decimal_places=2, default=None)
 MoneyField = Field(max_digits=10, decimal_places=2)
-StringFieldOrNone = Field(min_length=1, max_length=25, default=None)
+OptionalStringField = Field(min_length=1, max_length=25, default=None)
 StringField = Field(min_length=1, max_length=25)
 
 
 class CategoryBase(MySQLModel):
     name: str = StringField
-    budget: Decimal | None = MoneyFieldOrNone
+    budget: Decimal | None = OptionalMoneyField
 
     @field_validator("name", mode="before")
     @classmethod
@@ -67,7 +67,7 @@ class CategoryCreate(CategoryBase):
 
 
 class CategoryUpdate(CategoryBase):
-    name: str | None = StringFieldOrNone
+    name: str | None = OptionalStringField
 
     @field_validator("name", mode="before")
     @classmethod
@@ -115,8 +115,8 @@ class TransactionCreate(TransactionBase):
 
 class TransactionUpdate(TransactionBase):
     trans_date: datetime | None = None
-    amount: Decimal | None = MoneyFieldOrNone
-    vendor: str | None = StringFieldOrNone
+    amount: Decimal | None = OptionalMoneyField
+    vendor: str | None = OptionalStringField
 
     category_id: int | None = None
 
@@ -140,4 +140,4 @@ class MonthlySummary(BaseModel):
     category_id: int | None
     category_name: str | None
     amount_spent: Decimal = MoneyField
-    budget: Decimal | None = MoneyFieldOrNone
+    budget: Decimal | None = OptionalMoneyField

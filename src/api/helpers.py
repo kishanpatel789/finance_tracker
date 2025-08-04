@@ -138,7 +138,7 @@ def create_page(
 def get_month_range(year_month: str) -> DateRange:
     """
     Parse month in `YYYY-MM` format.
-    Return two dates for first day and last day of month.
+    Return start and end dates of month as namedtuple.
     """
     year, month = map(int, year_month.split("-"))
 

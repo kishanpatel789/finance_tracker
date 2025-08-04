@@ -1,7 +1,9 @@
+from datetime import date
+
 import plotly.graph_objects as go
 from nicegui import ui
 
-from ..helpers import call_api, currency_str_to_float
+from ..helpers import call_api, currency_str_to_float, get_month_options
 from ..theme import theme
 
 
@@ -15,7 +17,7 @@ def create() -> None:
             def make_bullet(fig, title, value, budget, y_domain):
                 is_under = value <= budget
                 delta_amount = round(abs(budget - value))
-                delta_text = f"${delta_amount} {'left' if is_under else 'over'}"
+                delta_text = f"${delta_amount:,} {'left' if is_under else 'over'}"
                 bar_color = mint_green if is_under else mint_red
 
                 value_text = f"${value:,} of ${budget:,}"
@@ -48,12 +50,20 @@ def create() -> None:
                     )
                 )
 
+            def search_div():
+                options = get_month_options(13)
+                ui.select(
+                    options,
+                    value=next(iter(options.keys())),
+                    on_change=lambda e: report_div.refresh(e.value),
+                )
+
             @ui.refreshable
-            def report_div():
+            def report_div(year_month: str):
                 fig = go.Figure()
 
                 result = call_api(
-                    "reports/monthly_budget?year_month=2025-07", method="GET"
+                    f"reports/monthly_budget?year_month={year_month}", method="GET"
                 )
                 num_lines = len(result.data)
                 spacing = 0.01
@@ -75,7 +85,10 @@ def create() -> None:
                 )
                 ui.plotly(fig)
 
+            # set initial state
+            initial_year_month: str = date.today().strftime("%Y-%m")
+
             # render content
             ui.label("Finance Tracker").classes("text-xl")
-            ui.label("Placeholder for home dashboard")
-            report_div()
+            search_div()
+            report_div(initial_year_month)

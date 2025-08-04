@@ -1,4 +1,6 @@
+import calendar
 from dataclasses import dataclass, field
+from datetime import date
 
 import httpx
 from decouple import config
@@ -65,4 +67,25 @@ def get_selectable_categories() -> dict[str, str]:
     result = call_api("/categories/", method="GET")
     if result.success:
         options.update({category["id"]: category["name"] for category in result.data})
+    return options
+
+
+def get_month_options(num_months: int) -> dict[str, str]:
+    """Get last few months, including current month. Output as dictionary for select input."""
+    today = date.today()
+    year = today.year
+    month = today.month
+    options = {}
+
+    for _ in range(num_months):
+        value = f"{year}-{month:02}"
+        label = f"{calendar.month_abbr[month]} {year}"
+        options[value] = label
+
+        if month == 1:
+            year -= 1
+            month = 12
+        else:
+            month -= 1
+
     return options

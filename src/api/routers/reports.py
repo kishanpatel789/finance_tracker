@@ -42,8 +42,8 @@ def get_monthly_report(year_month: YearMonthParam, session: SessionDep):
     # final query to get category info
     query = (
         select(
-            Category.id.label("category_id"),
-            Category.name.label("category_name"),
+            Category.id.label("category_id"),  # ty: ignore[unresolved-attribute]
+            Category.name.label("category_name"),  # ty: ignore[unresolved-attribute]
             func.coalesce(subq.c.amount_spent, 0).label("amount_spent"),
             Category.budget,
         )
@@ -51,7 +51,8 @@ def get_monthly_report(year_month: YearMonthParam, session: SessionDep):
             outerjoin(Category, subq, Category.id == subq.c.category_id, full=True)
         )
         .order_by(
-            case((Category.budget.is_(None), 1), else_=0), nulls_last(Category.name)
+            case((Category.budget.is_(None), 1), else_=0),  # ty: ignore[unresolved-attribute]
+            nulls_last(Category.name),
         )
     )
 

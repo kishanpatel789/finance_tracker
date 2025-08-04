@@ -60,9 +60,9 @@ def read_transactions(
         search_term = f"%{q}%"
         query = query.where(
             or_(
-                Transaction.vendor.ilike(search_term),
-                Transaction.note.ilike(search_term),
-                Transaction.category.has(Category.name.ilike(search_term)),
+                Transaction.vendor.ilike(search_term),  # ty: ignore[unresolved-attribute]
+                Transaction.note.ilike(search_term),  # ty: ignore[unresolved-attribute]
+                Transaction.category.has(Category.name.ilike(search_term)),  # ty: ignore[unresolved-attribute]
             )
         )
 
@@ -74,9 +74,9 @@ def read_transactions(
 
     # sort
     query = query.order_by(
-        Transaction.trans_date.desc(),
-        Transaction.vendor.desc(),
-        Transaction.amount.desc(),
+        Transaction.trans_date.desc(),  # ty: ignore[unresolved-attribute]
+        Transaction.vendor.desc(),  # ty: ignore[unresolved-attribute]
+        Transaction.amount.desc(),  # ty: ignore[unresolved-attribute]
     )
 
     page_output = create_page(query, query_map, pagination_input, session, request)

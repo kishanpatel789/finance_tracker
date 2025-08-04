@@ -37,16 +37,19 @@ def get_monthly_report(
     )
 
     # final query to get category info
-    cat = Category
     query = (
         select(
-            cat.id.label("category_id"),
-            cat.name.label("category_name"),
+            Category.id.label("category_id"),
+            Category.name.label("category_name"),
             func.coalesce(subq.c.amount_spent, 0).label("amount_spent"),
-            cat.budget,
+            Category.budget,
         )
-        .select_from(outerjoin(cat, subq, cat.id == subq.c.category_id, full=True))
-        .order_by(case((cat.budget.is_(None), 1), else_=0), nulls_last(cat.name))
+        .select_from(
+            outerjoin(Category, subq, Category.id == subq.c.category_id, full=True)
+        )
+        .order_by(
+            case((Category.budget.is_(None), 1), else_=0), nulls_last(Category.name)
+        )
     )
 
     data = session.exec(query).all()

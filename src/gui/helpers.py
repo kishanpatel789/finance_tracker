@@ -1,8 +1,8 @@
-import calendar
 from dataclasses import dataclass, field
 from datetime import date
 
 import httpx
+from dateutil.relativedelta import relativedelta
 from decouple import config
 from nicegui import ui
 
@@ -72,20 +72,14 @@ def get_selectable_categories() -> dict[str, str]:
 
 def get_month_options(num_months: int) -> dict[str, str]:
     """Get last few months, including current month. Output as dictionary for select input."""
-    today = date.today()
-    year = today.year
-    month = today.month
+    _date = date.today().replace(day=1)
     options = {}
 
     for _ in range(num_months):
-        value = f"{year}-{month:02}"
-        label = f"{calendar.month_abbr[month]} {year}"
+        value = _date.strftime("%Y-%m")
+        label = _date.strftime("%b %Y")
         options[value] = label
 
-        if month == 1:
-            year -= 1
-            month = 12
-        else:
-            month -= 1
+        _date -= relativedelta(months=1)
 
     return options

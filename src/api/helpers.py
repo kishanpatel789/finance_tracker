@@ -4,6 +4,7 @@ from datetime import date, timedelta
 from pathlib import Path
 from urllib.parse import urlencode
 
+from dateutil.relativedelta import relativedelta
 from fastapi import Request
 from pydantic import HttpUrl, TypeAdapter
 from sqlmodel import Session, func, select
@@ -141,11 +142,6 @@ def get_month_range(year_month: str) -> tuple[date, date]:
     year, month = map(int, year_month.split("-"))
 
     start_date = date(year, month, 1)
-
-    if month == 12:
-        end_date_plus_one = date(year + 1, 1, 1)
-    else:
-        end_date_plus_one = date(year, month + 1, 1)
-    end_date = end_date_plus_one - timedelta(days=1)
+    end_date = start_date + relativedelta(months=1) - timedelta(days=1)
 
     return start_date, end_date

@@ -13,6 +13,7 @@ from sqlmodel.sql.expression import SelectOfScalar
 from .models import PageBase, PageLinks, PaginationInput
 
 ProjectInfo = namedtuple("ProjectInfo", ["version", "author_name", "author_email"])
+DateRange = namedtuple("DateRange", ["start", "end"])
 
 
 def parse_pyproject_toml() -> ProjectInfo:
@@ -134,7 +135,7 @@ def create_page(
     return page_output
 
 
-def get_month_range(year_month: str) -> tuple[date, date]:
+def get_month_range(year_month: str) -> DateRange:
     """
     Parse month in `YYYY-MM` format.
     Return two dates for first day and last day of month.
@@ -144,4 +145,6 @@ def get_month_range(year_month: str) -> tuple[date, date]:
     start_date = date(year, month, 1)
     end_date = start_date + relativedelta(months=1) - timedelta(days=1)
 
-    return start_date, end_date
+    month_range = DateRange(start=start_date, end=end_date)
+
+    return month_range

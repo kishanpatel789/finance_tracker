@@ -21,7 +21,7 @@ router = APIRouter(
 def get_monthly_report(
     year_month: Annotated[str, Query(pattern=r"\d{4}-\d{2}")], session: SessionDep
 ):
-    start_date, end_date = get_month_range(year_month)
+    month_range = get_month_range(year_month)
 
     # subquery to aggregate transactions
     subq = (
@@ -29,8 +29,8 @@ def get_monthly_report(
             Transaction.category_id, func.sum(Transaction.amount).label("amount_spent")
         )
         .where(
-            Transaction.trans_date >= start_date,
-            Transaction.trans_date <= end_date,
+            Transaction.trans_date >= month_range.start,
+            Transaction.trans_date <= month_range.end,
         )
         .group_by(Transaction.category_id)
         .subquery()

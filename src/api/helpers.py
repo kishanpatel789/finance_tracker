@@ -1,8 +1,10 @@
 import tomllib
 from collections import namedtuple
+from datetime import date, timedelta
 from pathlib import Path
 from urllib.parse import urlencode
 
+from dateutil.relativedelta import relativedelta
 from fastapi import Request
 from pydantic import HttpUrl, TypeAdapter
 from sqlmodel import Session, func, select
@@ -11,6 +13,7 @@ from sqlmodel.sql.expression import SelectOfScalar
 from .models import PageBase, PageLinks, PaginationInput
 
 ProjectInfo = namedtuple("ProjectInfo", ["version", "author_name", "author_email"])
+DateRange = namedtuple("DateRange", ["start", "end"])
 
 
 def parse_pyproject_toml() -> ProjectInfo:
@@ -130,3 +133,18 @@ def create_page(
     )
 
     return page_output
+
+
+def get_month_range(year_month: str) -> DateRange:
+    """
+    Parse month in `YYYY-MM` format.
+    Return start and end dates of month as namedtuple.
+    """
+    year, month = map(int, year_month.split("-"))
+
+    start_date = date(year, month, 1)
+    end_date = start_date + relativedelta(months=1) - timedelta(days=1)
+
+    month_range = DateRange(start=start_date, end=end_date)
+
+    return month_range

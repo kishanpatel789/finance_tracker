@@ -126,7 +126,7 @@ def create() -> None:
                                 ).props("color=negative dense")
 
             def open_create_modal():
-                with ui.dialog() as dialog, ui.card().classes("w-[700px] items-center"):
+                with ui.dialog() as dialog, ui.card().classes("items-center"):
                     ui.label("Add Transaction").classes("text-lg font-semibold")
 
                     with ui.row().classes("justify-between"):
@@ -154,8 +154,8 @@ def create() -> None:
                             options=get_selectable_categories(),
                             with_input=True,
                         ).classes("w-4/10")
-                    with ui.row():
-                        note = ui.textarea("Note").classes("w-10/10")
+                    with ui.row().classes("w-full"):
+                        note = ui.textarea("Note").classes("w-full")
 
                     with ui.row():
                         ui.button("Cancel", on_click=dialog.close)
@@ -183,7 +183,7 @@ def create() -> None:
                     ui.notify("Transaction created")
 
             def open_edit_modal(row):
-                with ui.dialog() as dialog, ui.card().classes("w-[700px] items-center"):
+                with ui.dialog() as dialog, ui.card().classes("items-center"):
                     ui.label("Edit Transaction").classes("text-lg font-semibold")
 
                     with ui.row().classes("justify-between"):
@@ -219,8 +219,8 @@ def create() -> None:
                             value=current_category_id,
                             with_input=True,
                         ).classes("w-4/10")
-                    with ui.row():
-                        note = ui.textarea("Note", value=row["note"]).classes("w-10/10")
+                    with ui.row().classes("w-full"):
+                        note = ui.textarea("Note", value=row["note"]).classes("w-full")
 
                     with ui.row():
                         ui.button("Cancel", on_click=dialog.close)

@@ -158,7 +158,11 @@ def get_month_range(year_month: str) -> DateRange:
     Parse month in `YYYY-MM` format.
     Return start and end dates of month as namedtuple.
     """
-    year, month = map(int, year_month.split("-"))
+    try:
+        year, month = map(int, year_month.split("-"))
+        date(year, month, 1)
+    except ValueError:
+        raise ValueError("Invalid year-month format or values. Use 'YYYY-MM'.")
 
     start_date = date(year, month, 1)
     end_date = start_date + relativedelta(months=1) - timedelta(days=1)

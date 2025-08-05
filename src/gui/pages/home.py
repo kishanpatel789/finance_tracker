@@ -16,7 +16,7 @@ def create() -> None:
 
             def make_bullet(
                 fig: go.Figure,
-                title: str,
+                title: str | None,
                 value_str: str,
                 budget_str: str,
                 y_domain: list[float],

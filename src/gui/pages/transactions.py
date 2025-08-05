@@ -126,14 +126,14 @@ def create() -> None:
                                 ).props("color=negative dense")
 
             def open_create_modal():
-                with ui.dialog() as dialog, ui.card().classes("w-[700px]"):
+                with ui.dialog() as dialog, ui.card().classes("w-[700px] items-center"):
                     ui.label("Add Transaction").classes("text-lg font-semibold")
 
-                    with ui.row().classes("gap-4"):
+                    with ui.row().classes("justify-between"):
                         # date selector
                         with ui.input(
                             "Date", value=datetime.date.today().isoformat()
-                        ) as date:
+                        ).classes("w-4/10") as date:
                             with ui.menu().props("no-parent-event") as menu:
                                 with ui.date().bind_value(date):
                                     with ui.row().classes("justify-end"):
@@ -145,17 +145,17 @@ def create() -> None:
                                     "cursor-pointer"
                                 )
 
-                        amount = ui.number("Amount").classes("w-full")
-                    with ui.row().classes("gap-4"):
-                        vendor = ui.input("Vendor").classes("w-full")
+                        amount = ui.number("Amount").classes("w-4/10")
+                    with ui.row().classes("justify-between"):
+                        vendor = ui.input("Vendor").classes("w-4/10")
                         # category drop-down selector
                         category_id = ui.select(
                             label="Category",
                             options=get_selectable_categories(),
                             with_input=True,
-                        ).classes("w-full")
+                        ).classes("w-4/10")
                     with ui.row():
-                        note = ui.textarea("Note").classes("w-full")
+                        note = ui.textarea("Note").classes("w-10/10")
 
                     with ui.row():
                         ui.button("Cancel", on_click=dialog.close)
@@ -183,12 +183,14 @@ def create() -> None:
                     ui.notify("Transaction created")
 
             def open_edit_modal(row):
-                with ui.dialog() as dialog, ui.card().classes("w-[700px]"):
+                with ui.dialog() as dialog, ui.card().classes("w-[700px] items-center"):
                     ui.label("Edit Transaction").classes("text-lg font-semibold")
 
-                    with ui.row().classes("gap-4"):
+                    with ui.row().classes("justify-between"):
                         # date selector
-                        with ui.input("Date", value=row["trans_date"]) as date:
+                        with ui.input("Date", value=row["trans_date"]).classes(
+                            "w-4/10"
+                        ) as date:
                             with ui.menu().props("no-parent-event") as menu:
                                 with ui.date().bind_value(date):
                                     with ui.row().classes("justify-end"):
@@ -202,10 +204,10 @@ def create() -> None:
 
                         amount = ui.number(
                             "Amount", value=currency_str_to_float(row["amount"])
-                        ).classes("w-full")
-                    with ui.row().classes("gap-4"):
+                        ).classes("w-4/10")
+                    with ui.row().classes("justify-between"):
                         vendor = ui.input("Vendor", value=row["vendor"]).classes(
-                            "w-full"
+                            "w-4/10"
                         )
                         # category drop-down selector
                         current_category_id = (
@@ -216,9 +218,9 @@ def create() -> None:
                             label="Category",
                             value=current_category_id,
                             with_input=True,
-                        ).classes("w-full")
+                        ).classes("w-4/10")
                     with ui.row():
-                        note = ui.textarea("Note", value=row["note"]).classes("w-full")
+                        note = ui.textarea("Note", value=row["note"]).classes("w-10/10")
 
                     with ui.row():
                         ui.button("Cancel", on_click=dialog.close)

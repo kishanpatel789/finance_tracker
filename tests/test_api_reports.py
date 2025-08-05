@@ -74,3 +74,22 @@ def test_get_monthly_report(client: TestClient, add_transactions):
     assert data[2]["category_name"] is None
     assert data[2]["amount_spent"] == "25.00"
     assert data[2]["budget"] is None
+
+
+@pytest.mark.parametrize(
+    "year_month,expected_error_type,expected_msg",
+    [
+        ("blah", "string_pattern_mismatch", "String should match pattern"),
+        ("9999-12", "value_error", "cannot exceed current year"),
+        ("2025-14", "value_error", "must be between '01' and '12'"),
+    ],
+)
+def test_get_month_report_422_bad_param(
+    client: TestClient, year_month, expected_error_type, expected_msg
+):
+    url = f"/reports/monthly_budget?year_month={year_month}"
+    response = client.request("GET", url)
+    data = response.json()
+    assert response.status_code == 422
+    assert data["detail"][0]["type"] == expected_error_type
+    assert expected_msg in data["detail"][0]["msg"]

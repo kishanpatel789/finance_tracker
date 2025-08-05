@@ -1,7 +1,7 @@
 import tomllib
-from collections import namedtuple
 from datetime import date, timedelta
 from pathlib import Path
+from typing import NamedTuple
 from urllib.parse import urlencode
 
 from dateutil.relativedelta import relativedelta
@@ -12,8 +12,16 @@ from sqlmodel.sql.expression import SelectOfScalar
 
 from .models import PageBase, PageLinks, PaginationInput
 
-ProjectInfo = namedtuple("ProjectInfo", ["version", "author_name", "author_email"])
-DateRange = namedtuple("DateRange", ["start", "end"])
+
+class ProjectInfo(NamedTuple):
+    version: str
+    author_name: str
+    author_email: str
+
+
+class DateRange(NamedTuple):
+    start: date
+    end: date
 
 
 def parse_pyproject_toml() -> ProjectInfo:
@@ -135,12 +143,26 @@ def create_page(
     return page_output
 
 
+def validate_year_month(year_month: str) -> str:
+    year, month = map(int, year_month.split("-"))
+    if year > date.today().year:
+        raise ValueError("Input year cannot exceed current year.")
+    if not (1 <= month <= 12):
+        raise ValueError("Input month must be between '01' and '12'.")
+
+    return year_month
+
+
 def get_month_range(year_month: str) -> DateRange:
     """
     Parse month in `YYYY-MM` format.
     Return start and end dates of month as namedtuple.
     """
-    year, month = map(int, year_month.split("-"))
+    try:
+        year, month = map(int, year_month.split("-"))
+        date(year, month, 1)
+    except ValueError:
+        raise ValueError("Invalid year-month format or values. Use 'YYYY-MM'.")
 
     start_date = date(year, month, 1)
     end_date = start_date + relativedelta(months=1) - timedelta(days=1)

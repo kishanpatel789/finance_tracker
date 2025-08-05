@@ -14,13 +14,26 @@ def create() -> None:
             mint_green = "#78c2ad"
             mint_red = "#e25c5c"
 
-            def make_bullet(fig, title, value, budget, y_domain):
+            def make_bullet(
+                fig: go.Figure,
+                title: str | None,
+                value_str: str,
+                budget_str: str,
+                y_domain: list[float],
+            ):
+                value = currency_str_to_float(value_str)
+                budget = currency_str_to_float(budget_str)
                 is_under = value <= budget
-                delta_amount = round(abs(budget - value))
-                delta_text = f"${delta_amount:,} {'left' if is_under else 'over'}"
                 bar_color = mint_green if is_under else mint_red
 
-                value_text = f"${value:,} of ${budget:,}"
+                if budget_str is not None:
+                    delta_amount = round(abs(budget - value))
+                    delta_text = f"${delta_amount:,} {'left' if is_under else 'over'}"
+                else:
+                    delta_text = ""
+
+                if title is None:
+                    title = "No Category"
 
                 fig.add_trace(
                     go.Indicator(
@@ -34,19 +47,21 @@ def create() -> None:
                         gauge={
                             "shape": "bullet",
                             "axis": {
-                                "range": [None, max(value, budget)],
+                                "range": [
+                                    0.0,
+                                    max(value, budget, 1),
+                                ],  # max must be at least 1 for proper rendering
                                 "visible": False,
                             },
                             "bar": {"color": bar_color, "thickness": 1},
                         },
                         number={
                             "font": {
-                                "size": 20,
+                                "size": 16,
                             },
                             "prefix": "$",
                             "valueformat": ",.2f",
                         },
-                        customdata=[[value_text]],
                     )
                 )
 
@@ -71,8 +86,8 @@ def create() -> None:
                     make_bullet(
                         fig,
                         line["category_name"],
-                        value=currency_str_to_float(line["amount_spent"]),
-                        budget=currency_str_to_float(line["budget"]),
+                        value_str=line["amount_spent"],
+                        budget_str=line["budget"],
                         y_domain=[
                             (num_lines - i - 1) / num_lines + spacing,
                             (num_lines - i) / num_lines - spacing,

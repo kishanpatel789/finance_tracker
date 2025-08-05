@@ -60,9 +60,13 @@ def read_transactions(
         search_term = f"%{q}%"
         query = query.where(
             or_(
-                Transaction.vendor.ilike(search_term),  # ty: ignore[unresolved-attribute]
+                Transaction.vendor.ilike(
+                    search_term
+                ),  # ty: ignore[unresolved-attribute]
                 Transaction.note.ilike(search_term),  # ty: ignore[unresolved-attribute]
-                Transaction.category.has(Category.name.ilike(search_term)),  # ty: ignore[unresolved-attribute]
+                Transaction.category.has(
+                    Category.name.ilike(search_term)
+                ),  # ty: ignore[unresolved-attribute]
             )
         )
 

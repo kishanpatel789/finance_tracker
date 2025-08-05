@@ -1,7 +1,7 @@
 import tomllib
-from collections import namedtuple
 from datetime import date, timedelta
 from pathlib import Path
+from typing import NamedTuple
 from urllib.parse import urlencode
 
 from dateutil.relativedelta import relativedelta
@@ -12,8 +12,16 @@ from sqlmodel.sql.expression import SelectOfScalar
 
 from .models import PageBase, PageLinks, PaginationInput
 
-ProjectInfo = namedtuple("ProjectInfo", ["version", "author_name", "author_email"])
-DateRange = namedtuple("DateRange", ["start", "end"])
+
+class ProjectInfo(NamedTuple):
+    version: str
+    author_name: str
+    author_email: str
+
+
+class DateRange(NamedTuple):
+    start: date
+    end: date
 
 
 def parse_pyproject_toml() -> ProjectInfo:

@@ -22,7 +22,11 @@ services:
     restart: always
 
   backend:
-    build: ./docker/backend
+    build:
+      context: ./docker/backend
+      dockerfile: Dockerfile
+      additional_contexts:
+        project_root: .
     container_name: finance-tracker-backend
     environment:
       <<: *env-common

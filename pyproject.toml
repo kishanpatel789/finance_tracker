@@ -33,6 +33,7 @@ cov = "pytest --cov=src/api --cov-report=term-missing"
 lint = "uv tool run ruff check ."
 format = "uv tool run ruff format ."
 tc = "uv tool run ty check ."
+db_upgrade = "uv run alembic upgrade head"
 apirun = "uv run fastapi dev src/api/main.py"
 guirun = "uv run python -m src.gui.main"
 

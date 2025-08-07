@@ -38,8 +38,20 @@ services:
         condition: service_healthy
         restart: true
 
-  # frontend:
-  #TODO: insert NiceGUI service
+  frontend:
+    build:
+      context: ./docker/frontend
+      dockerfile: Dockerfile
+      additional_contexts:
+        project_root: .
+    container_name: finance-tracker-frontend
+    environment:
+      API_BASE_URL: "http://backend:8000"
+    ports:
+      - "8003:8080"
+    depends_on:
+      backend:
+        condition: service_started
 
 volumes:
   postgres-db:

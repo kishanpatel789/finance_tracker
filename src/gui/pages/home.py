@@ -75,12 +75,16 @@ def create() -> None:
 
             @ui.refreshable
             def report_div(year_month: str):
-                fig = go.Figure()
-
                 result = call_api(
                     f"reports/monthly_budget?year_month={year_month}", method="GET"
                 )
                 num_lines = len(result.data)
+
+                if num_lines == 0:
+                    ui.label("No data to report").classes("text-gray-500")
+                    return
+
+                fig = go.Figure()
                 spacing = 0.01
                 for i, line in enumerate(result.data):
                     make_bullet(

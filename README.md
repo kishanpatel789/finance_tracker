@@ -40,9 +40,9 @@ docker compose up -d
 
 This will build three images. Then three containers will be created and started:
 
-1. Postgres database: accessible locally on port 8001
-2. FastAPI application: accessible locally on port 8002
-3. NiceGUI application: accessible locally on port 8003
+1. **Postgres database**: accessible locally on port 8001
+2. **FastAPI application**: accessible locally on port 8002
+3. **NiceGUI application**: accessible locally on port 8003
 
 If any of the ports are already in use on your machine, you can change the port mapping in the file `compose.yaml`.
 
@@ -66,9 +66,9 @@ Access the UI at `http://127.0.0.1:8003`.
 
 There are three pages:
 
-1. Home: View reports summarizing transactions against budget by month.
-2. Transactions: Create and manage transactions. Search transactions by date range, vendor, notes, and category.
-3. Categories: Create and manage categories. Each category can have a monthly budget.
+1. **Home**: View reports summarizing transactions against budget by month.
+2. **Transactions**: Create and manage transactions. Search transactions by date range, vendor, notes, and category.
+3. **Categories**: Create and manage categories. Each category can have a monthly budget.
 
 ![NiceGUI Samples](./images/ScreenshotNiceGUI.png)
 

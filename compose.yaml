@@ -19,7 +19,7 @@ services:
       interval: 10s
       retries: 5
       start_period: 5s
-    restart: always
+    restart: unless-stopped
 
   backend:
     build:
@@ -37,9 +37,23 @@ services:
       postgres:
         condition: service_healthy
         restart: true
+    restart: unless-stopped
 
-  # frontend:
-  #TODO: insert NiceGUI service
+  frontend:
+    build:
+      context: ./docker/frontend
+      dockerfile: Dockerfile
+      additional_contexts:
+        project_root: .
+    container_name: finance-tracker-frontend
+    environment:
+      API_BASE_URL: "http://backend:8000"
+    ports:
+      - "8003:8080"
+    depends_on:
+      backend:
+        condition: service_started
+    restart: unless-stopped
 
 volumes:
   postgres-db:

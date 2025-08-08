@@ -2,7 +2,7 @@
 set -e
 
 echo "Running Alembic migrations..."
-uv run alembic upgrade head
+uv run --no-sync alembic upgrade head
 
 echo "Starting FastAPI app..."
-uv run fastapi run src/api/main.py --proxy-headers --port 8000
+uv run --no-sync fastapi run src/api/main.py --proxy-headers --port 8000

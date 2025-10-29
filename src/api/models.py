@@ -1,10 +1,13 @@
 import re
 from datetime import date, datetime, timezone
 from decimal import Decimal
+from enum import StrEnum
 from typing import Annotated
 
 from fastapi import Query
 from pydantic import BaseModel, ConfigDict, HttpUrl, field_validator
+from sqlalchemy import Column
+from sqlalchemy import Enum as SaEnum
 from sqlmodel import Field, Relationship, SQLModel
 
 
@@ -86,6 +89,51 @@ class CategoryReadNested(MySQLModel):
     name: str
 
 
+def enum_column(enum_cls):
+    """A SQLAlchemy column that properly returns ENUM values instead of labels"""
+    return Column(SaEnum(enum_cls, values_callable=lambda x: [e.value for e in x]))
+
+
+class AccountTypeEnum(StrEnum):
+    CASH = "cash"
+    CREDIT_CARD = "credit_card"
+
+
+class AccountBase(MySQLModel):
+    name: str = StringField
+    active: bool = True
+    short_number: str = StringField
+    account_type: AccountTypeEnum = Field(sa_column=enum_column(AccountTypeEnum))
+
+
+class Account(AccountBase, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+
+    transactions: list["Transaction"] = Relationship(back_populates="account")
+
+
+class AccountCreate(AccountBase):
+    pass
+
+
+class AccountUpdate(AccountBase):
+    name: str | None = OptionalStringField
+    active: bool | None
+    short_number: str | None
+    account_type: AccountTypeEnum | None
+
+    @field_validator("name", mode="before")
+    @classmethod
+    def reject_null_name(cls, value: str | None) -> str:
+        if value is None:
+            raise ValueError("Field 'name' cannot be null")
+        return value
+
+
+class AccountRead(AccountBase):
+    id: int
+
+
 class TransactionBase(MySQLModel):
     trans_date: date
     amount: Decimal = MoneyField
@@ -102,6 +150,16 @@ class Transaction(TransactionBase, table=True):
         default=None, foreign_key="category.id", ondelete="SET NULL"
     )
     category: Category | None = Relationship(
+        back_populates="transactions",
+        sa_relationship_kwargs={
+            "lazy": "selectin",
+        },
+    )
+
+    account_id: int | None = Field(
+        default=None, foreign_key="account.id", ondelete="SET NULL"
+    )
+    account: Account | None = Relationship(
         back_populates="transactions",
         sa_relationship_kwargs={
             "lazy": "selectin",

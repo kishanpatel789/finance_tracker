@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 
 from .helpers import parse_pyproject_toml
-from .routers import categories, reports, transactions
+from .routers import accounts, categories, reports, transactions
 
 project_info = parse_pyproject_toml()
 
@@ -49,6 +49,7 @@ app = FastAPI(
 )
 
 app.include_router(categories.router)
+app.include_router(accounts.router)
 app.include_router(transactions.router)
 app.include_router(reports.router)
 
